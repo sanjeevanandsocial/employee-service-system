@@ -1,0 +1,78 @@
+<h1>Edit User</h1>
+
+<%= form_with model: @employee, url: employee_path(@employee), method: :patch do |f| %>
+
+  <div class="mb-3">
+    <%= f.label :email %><br>
+    <%= f.email_field :email, class: "form-control" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :role %><br>
+    <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :gender %><br>
+    <%= f.select :gender, User.genders.keys.map { |g| [g.titleize, g] }, {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :age %><br>
+    <%= f.number_field :age, class: "form-control" %>
+  </div>
+
+  <hr>
+
+  <h3>Addresses</h3>
+
+  <%= f.fields_for :addresses do |addr| %>
+    <div class="border p-3 mb-3 rounded">
+
+      <div class="mb-2">
+        <%= addr.label :address_type %><br>
+        <%= addr.select :address_type, Address.address_types.keys.map { |a| [a.titleize, a] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :line1 %><br>
+        <%= addr.text_field :line1, class: "form-control" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :line2 %><br>
+        <%= addr.text_field :line2, class: "form-control" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :city %><br>
+        <%= addr.text_field :city, class: "form-control" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :state %><br>
+        <%= addr.text_field :state, class: "form-control" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :zip %><br>
+        <%= addr.text_field :zip, class: "form-control" %>
+      </div>
+
+      <div class="mb-2">
+        <%= addr.label :country %><br>
+        <%= addr.text_field :country, class: "form-control" %>
+      </div>
+
+      <div class="form-check">
+        <%= addr.check_box :_destroy, class: "form-check-input" %>
+        <%= addr.label :_destroy, "Remove this address", class: "form-check-label" %>
+      </div>
+
+    </div>
+  <% end %>
+
+  <%= f.submit "Update User", class: "btn btn-primary" %>
+<% end %>
+
+<%= link_to "Back", employees_path, class: "btn btn-secondary mt-3" %>

@@ -1,0 +1,35 @@
+<h1>Employees</h1>
+
+<%= link_to "Add Employee", new_employee_path, class: "btn btn-primary" %>
+
+<table class="table mt-3">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @employees.each do |emp| %>
+      <tr>
+        <td><%= emp.email %></td>
+        <td><%= emp.role.capitalize %></td>
+        <td><%= emp.is_frozen ? "Frozen" : "Active" %></td>
+        <td>
+  <%= link_to "Edit", edit_employee_path(emp), class: "btn btn-sm btn-warning" %> | 
+  <%= link_to "Attendance", attendance_employee_path(emp) %> |
+  
+  <% unless emp.is_frozen %>
+    <%= link_to "Freeze", freeze_account_employee_path(emp),
+                method: :patch,
+                data: { confirm: "Are you sure?" },
+                class: "btn btn-sm btn-danger" %>
+  <% end %>
+</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

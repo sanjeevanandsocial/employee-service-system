@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin Dashboard</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  </head>
+
+  <body style="display:flex; min-height:100vh; margin:0;">
+    <!-- Left Sidebar -->
+    <div style="width:200px; background:#2c3e50; color:white; padding:20px;">
+      <h2>Menu</h2>
+      <ul style="list-style:none; padding:0;">
+        <li><%= link_to "Dashboard", dashboard_path, style:"color:white; text-decoration:none;" %></li>
+        <li><%= link_to "Employees", employees_path, style:"color:white; text-decoration:none;" %></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div style="flex:1; background:#ecf0f1;">
+      <!-- Top Bar -->
+      <div style="height:60px; background:white; padding:10px 20px; display:flex; justify-content: flex-end; align-items:center; box-shadow: 0 1px 5px rgba(0,0,0,0.1);">
+        <span style="margin-right:10px;"><%= current_user.email %></span>
+        <%= link_to "Logout", destroy_user_session_path, method: :delete, style:"text-decoration:none;" %>
+      </div>
+
+      <!-- Content -->
+      <div style="padding:20px;">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

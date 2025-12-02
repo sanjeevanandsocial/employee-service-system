@@ -1,0 +1,157 @@
+<h3 style="margin-bottom: 20px; margin-top: 0; color: #3949ab;">
+  <%= @employee.email %> — Attendance for 
+  <%= @date.strftime("%B %Y") %>
+</h3>
+<div class="nav-buttons">
+  
+  <!-- Previous Month -->
+  <%= link_to "◀ Previous Month", 
+      attendance_employee_path(@employee, month: (@date - 1.month).strftime("%Y-%m-01")),
+      class: "month-btn" %>
+
+  <!-- Next Month (Hidden for current month) -->
+  <% unless @date.month == Date.today.month && @date.year == Date.today.year %>
+    <%= link_to "Next Month ▶", 
+        attendance_employee_path(@employee, month: (@date + 1.month).strftime("%Y-%m-01")),
+        class: "month-btn" %>
+  <% else %>
+    <span></span> <!-- Keeps layout aligned -->
+  <% end %>
+
+</div>
+
+<style>
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+  }
+
+  .calendar-table th {
+    background: #3949ab;
+    color: white;
+    padding: 12px 0;
+    font-size: 15px;
+  }
+
+  .calendar-table td {
+    border: 1px solid #ddd;
+    width: 14.28%;
+    vertical-align: top;
+    background: white;
+    padding: 6px;
+    position: relative;
+  }
+
+  .outside-month {
+    background: #f3f4f7 !important;
+    color: #777;
+  }
+
+  .day-number {
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 5px;
+  }
+
+  .today-highlight {
+    background: #1e88e5 !important;
+    color: white;
+    border-radius: 50%;
+    padding: 4px 8px;
+  }
+
+  .attendance-select {
+    margin-top: 8px;
+    width: 90%;
+    padding: 4px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+  }
+
+  .month-btn {
+    background: #3949ab;
+    color: white !important;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    transition: 0.2s ease-in-out;
+  }
+
+  .month-btn:hover {
+    background: #1e88e5;
+  }
+
+  /* Disabled button style */
+  .month-btn.disabled {
+    background: #9fa8da;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+</style>
+
+<table class="calendar-table">
+  <tr>
+    <th>Sun</th>
+    <th>Mon</th>
+    <th>Tue</th>
+    <th>Wed</th>
+    <th>Thu</th>
+    <th>Fri</th>
+    <th>Sat</th>
+  </tr>
+
+  <% first_day = @date.beginning_of_month %>
+  <% last_day = @date.end_of_month %>
+
+  <% calendar_start = first_day.beginning_of_week(:sunday) %>
+  <% calendar_end = last_day.end_of_week(:sunday) %>
+
+  <% today = Date.today %>
+  <% current_day = calendar_start %>
+
+  <% while current_day <= calendar_end %>
+    <tr>
+      <% 7.times do %>
+        <% outside = (current_day.month != @date.month) %>
+
+        <td class="<%= 'outside-month' if outside %>">
+
+          <% # DAY NUMBER + TODAY HIGHLIGHT %>
+          <% if current_day == today && @date.month == today.month && @date.year == today.year %>
+            <span class="day-number today-highlight"><%= current_day.day %></span>
+          <% else %>
+            <span class="day-number"><%= current_day.day %></span>
+          <% end %>
+
+          <% if !outside %>
+            <% # ENABLE ONLY FOR CURRENT MONTH & PAST DAYS OF CURRENT MONTH %>
+            <% enabled = (@date.month == today.month && @date.year == today.year && current_day <= today) %>
+
+            <select 
+              name="attendance[<%= current_day %>]" 
+              class="attendance-select"
+              <%= "disabled" unless enabled %>
+            >
+              <option value="">--</option>
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="OD">OD</option>
+              <option value="leave">Leave</option>
+            </select>
+          <% end %>
+
+        </td>
+
+        <% current_day += 1.day %>
+      <% end %>
+    </tr>
+  <% end %>
+
+</table>
