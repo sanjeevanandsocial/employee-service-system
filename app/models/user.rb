@@ -9,6 +9,9 @@ class User < ApplicationRecord
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
 
+  validates :gender, presence: true
+  validates :age, presence: true, numericality: { only_integer: true, greater_than: 0 }
+
   def frozen_account?
     self.is_frozen
   end

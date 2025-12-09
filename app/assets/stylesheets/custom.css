@@ -1,0 +1,102 @@
+/* Outer container: split screen */
+.login-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Left side image (50% width) */
+  .login-left {
+    flex: 1 1 50%;
+    min-width: 300px;
+    background-image: url('https://ess.changepond.com/static/media/login-bg.739e62fcf1f5dc33c56a.jpg');
+    background-size: cover;
+    background-position: center;
+  }
+  
+  /* Right side: center content exactly in the middle */
+  .login-right {
+    flex: 1 1 50%;
+    display: flex;
+    align-items: center;       /* vertical center */
+    justify-content: center;   /* horizontal center */
+    background: #fff;
+    padding: 40px 20px;        /* keep small side padding for mobile */
+  }
+  
+  /* Login card */
+  .form-box {
+    width: 100%;
+    max-width: 420px;          /* slightly wider for nicer balance */
+    background: #fff;
+    padding: 36px 36px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-sizing: border-box;
+    margin: 0;                 /* ensure no extra margin pushes it */
+  }
+  
+  /* Title centered */
+  .title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #222;
+    text-align: center;
+    margin: 4px 0 26px;
+  }
+  
+  /* Inputs & labels */
+  .input-group {
+    margin-bottom: 16px;
+  }
+  
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d6d6d6;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: box-shadow .18s, border-color .18s;
+    box-sizing: border-box;
+  }
+  
+  .input:focus {
+    outline: none;
+    border-color: #1e88ff;
+    box-shadow: 0 6px 18px rgba(30,136,255,0.12);
+  }
+  
+  /* Submit */
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    background: #0062d6;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 8px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  }
+  
+  /* Slightly larger spacing on bigger screens */
+  @media (min-width: 1100px) {
+    .form-box { padding: 40px 20px; max-width: 400px; }
+  }
+  
+  /* Mobile: hide left image, full width form */
+  @media (max-width: 768px) {
+    .login-left { display: none; }
+    .login-right { flex: 1 1 100%; padding: 30px 18px; }
+    .form-box { max-width: 420px; width: 100%; }
+  }
+  

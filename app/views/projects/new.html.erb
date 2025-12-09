@@ -1,0 +1,118 @@
+<style>
+  .form-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+
+  .form-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: 300;
+    font-size: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+  }
+</style>
+
+<div class="form-container">
+  <div class="form-card">
+    <h1 class="form-title">Add New Project</h1>
+
+    <%= form_with model: @project, url: projects_path, local: true do |f| %>
+
+      <!-- Project Name -->
+      <div class="form-group">
+        <%= f.label :title, "Project Name", class: "form-label" %>
+        <%= f.text_field :title, class: "form-input", placeholder: "Enter project name" %>
+      </div>
+
+      <!-- Project Description -->
+      <div class="form-group">
+        <%= f.label :description, class: "form-label" %>
+        <%= f.text_area :description, rows: 4, class: "form-input", placeholder: "Enter project description" %>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-group">
+        <%= f.submit "Create Project", class: "btn-primary" %>
+        <%= link_to "Back", projects_path, class: "btn-secondary" %>
+      </div>
+
+    <% end %>
+  </div>
+</div>

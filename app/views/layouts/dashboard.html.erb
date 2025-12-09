@@ -1,35 +1,327 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Admin Dashboard</title>
+    <title>Employee Service System</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        min-height: 100vh;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: 280px;
+        background: #00226d;
+        color: white;
+        padding: 30px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+              }
+
+      .sidebar-header {
+        padding: 0 30px 40px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .sidebar h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -0.5px;
+      }
+
+      .sidebar-nav {
+        padding: 30px 0 0 0;
+      }
+
+      .sidebar ul {
+        list-style: none;
+      }
+
+      .sidebar li {
+        margin-bottom: 0;
+      }
+
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        padding: 12px 30px;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .sidebar a:hover, .sidebar a.active {
+        color: white;
+        background: rgba(255, 255, 255, 0.2);
+        border-left-color: white;
+      }
+
+      .sidebar a i {
+        margin-right: 12px;
+        width: 20px;
+        text-align: center;
+      }
+
+      /* TOP BAR */
+      .topbar {
+        position: fixed;
+        left: 280px;
+        right: 0;
+        top: 0;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 0 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+      }
+
+      .topbar-left h1 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 25px;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .user-email {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .logout-btn {
+        color: #ef4444;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .logout-btn:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+      }
+
+      /* CONTENT AREA */
+      .content-area {
+        margin-left: 280px;
+        margin-top: 70px;
+        padding: 30px;
+        min-height: calc(100vh - 70px);
+        background: white;
+      }
+
+      /* TABLES */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+
+      table th, table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        text-align: left;
+      }
+
+      table th {
+        background: #f8fafc;
+        font-weight: 600;
+        font-size: 14px;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      table tr:hover {
+        background: #f8fafc;
+      }
+
+      table tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        margin: 4px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      }
+
+      .btn-danger:hover {
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+      }
+
+      .btn-secondary:hover {
+        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+      }
+
+      .page-title {
+        font-size: 32px;
+        margin-bottom: 30px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      /* CARDS */
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 24px;
+        border: 1px solid #e2e8f0;
+       }
+
+      /* RESPONSIVE */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+        
+        .topbar {
+          left: 0;
+        }
+        
+        .content-area {
+          margin-left: 0;
+        }
+      }
+    </style>
   </head>
 
-  <body style="display:flex; min-height:100vh; margin:0;">
-    <!-- Left Sidebar -->
-    <div style="width:200px; background:#2c3e50; color:white; padding:20px;">
-      <h2>Menu</h2>
-      <ul style="list-style:none; padding:0;">
-        <li><%= link_to "Dashboard", dashboard_path, style:"color:white; text-decoration:none;" %></li>
-        <li><%= link_to "Employees", employees_path, style:"color:white; text-decoration:none;" %></li>
-      </ul>
+  <body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-users-cog"></i> ESS</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <ul>
+          <li><%= link_to dashboard_path, class: request.path == dashboard_path ? 'active' : '' do %>
+            <i class="fas fa-chart-pie"></i> Dashboard
+          <% end %></li>
+          <li><%= link_to employees_path, class: request.path.include?('employees') ? 'active' : '' do %>
+            <i class="fas fa-users"></i> Employees
+          <% end %></li>
+          <li><%= link_to projects_path, class: request.path.include?('projects') ? 'active' : '' do %>
+            <i class="fa-solid fa-diagram-project"></i> Projects
+          <% end %></li>
+        </ul>
+      </nav>
     </div>
 
-    <!-- Main Content -->
-    <div style="flex:1; background:#ecf0f1;">
-      <!-- Top Bar -->
-      <div style="height:60px; background:white; padding:10px 20px; display:flex; justify-content: flex-end; align-items:center; box-shadow: 0 1px 5px rgba(0,0,0,0.1);">
-        <span style="margin-right:10px;"><%= current_user.email %></span>
-        <%= link_to "Logout", destroy_user_session_path, method: :delete, style:"text-decoration:none;" %>
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1>Employee Service System</h1>
       </div>
+      <div class="topbar-right">
+        <div class="user-info">
+          <div class="user-avatar">
+            <%= current_user.email.first.upcase %>
+          </div>
+          <span class="user-email"><%= current_user.email %></span>
+        </div>
+        <%= button_to destroy_user_session_path, method: :delete, class: 'logout-btn' do %>
+          <i class="fas fa-sign-out-alt"></i> Logout
+        <% end %>        
+      </div>
+    </div>
 
-      <!-- Content -->
-      <div style="padding:20px;">
-        <%= yield %>
-      </div>
+    <!-- CONTENT -->
+    <div class="content-area">
+      <%= yield %>
     </div>
   </body>
 </html>

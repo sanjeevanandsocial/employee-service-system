@@ -14,10 +14,12 @@ Rails.application.routes.draw do
 
   # Admin-only routes
   authenticate :user, ->(u) { u.admin? } do
-    resources :employees, except: [:index] do
-      member do
-        patch :freeze_account
-      end
+    resources :employees, except: [:index]
+  end
+
+  resources :projects do
+    member do
+      get :details
     end
   end
 

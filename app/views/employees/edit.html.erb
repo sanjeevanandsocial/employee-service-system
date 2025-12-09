@@ -1,78 +1,122 @@
-<h1>Edit User</h1>
+<div class="form-container">
+  <div class="form-card">
+    <h1 class="form-title">Edit Employee</h1>
+    
+    <% if @employee.errors.any? %>
+      <div class="error-messages">
+        <h3><%= pluralize(@employee.errors.count, "error") %> prohibited this employee from being saved:</h3>
+        <ul>
+          <% @employee.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    
+    <%= form_with model: @employee, url: employee_path(@employee), method: :patch do |f| %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-input", disabled: true %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :role, class: "form-label" %>
+            <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, { prompt: "Select role" }, class: "form-input" %>
+          </div>
+        </div>
+      </div>
 
-<%= form_with model: @employee, url: employee_path(@employee), method: :patch do |f| %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :gender, class: "form-label" %>
+            <%= f.text_field :gender, value: @employee.gender&.titleize, class: "form-input", disabled: true %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :age, class: "form-label" %>
+            <%= f.number_field :age, class: "form-input" %>
+          </div>
+        </div>
+      </div>
 
-  <div class="mb-3">
-    <%= f.label :email %><br>
-    <%= f.email_field :email, class: "form-control" %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :created_at, "Created At", class: "form-label" %>
+            <%= f.text_field :created_at, value: @employee.created_at&.strftime("%Y-%m-%d %H:%M"), class: "form-input", disabled: true %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :updated_at, "Modified At", class: "form-label" %>
+            <%= f.text_field :updated_at, value: @employee.updated_at&.strftime("%Y-%m-%d %H:%M"), class: "form-input", disabled: true %>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-title">Address Information</h3>
+
+      <%= f.fields_for :addresses do |addr| %>
+        <div class="address-section">
+          <%= addr.hidden_field :id %>
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :line1, "Address Line 1", class: "form-label" %>
+                <%= addr.text_field :line1, class: "form-input" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :line2, "Address Line 2", class: "form-label" %>
+                <%= addr.text_field :line2, class: "form-input" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :city, class: "form-label" %>
+                <%= addr.text_field :city, class: "form-input" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :state, class: "form-label" %>
+                <%= addr.text_field :state, class: "form-input" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :zip, "ZIP Code", class: "form-label" %>
+                <%= addr.text_field :zip, class: "form-input" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :country, class: "form-label" %>
+                <%= addr.text_field :country, class: "form-input" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="btn-group">
+        <%= f.submit "Update Employee", class: "btn-primary" %>
+        <%= link_to "Back", employees_path, class: "btn-secondary" %>
+      </div>
+    <% end %>
   </div>
+</div>
 
-  <div class="mb-3">
-    <%= f.label :role %><br>
-    <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "form-select" %>
-  </div>
 
-  <div class="mb-3">
-    <%= f.label :gender %><br>
-    <%= f.select :gender, User.genders.keys.map { |g| [g.titleize, g] }, {}, class: "form-select" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :age %><br>
-    <%= f.number_field :age, class: "form-control" %>
-  </div>
-
-  <hr>
-
-  <h3>Addresses</h3>
-
-  <%= f.fields_for :addresses do |addr| %>
-    <div class="border p-3 mb-3 rounded">
-
-      <div class="mb-2">
-        <%= addr.label :address_type %><br>
-        <%= addr.select :address_type, Address.address_types.keys.map { |a| [a.titleize, a] }, {}, class: "form-select" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :line1 %><br>
-        <%= addr.text_field :line1, class: "form-control" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :line2 %><br>
-        <%= addr.text_field :line2, class: "form-control" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :city %><br>
-        <%= addr.text_field :city, class: "form-control" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :state %><br>
-        <%= addr.text_field :state, class: "form-control" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :zip %><br>
-        <%= addr.text_field :zip, class: "form-control" %>
-      </div>
-
-      <div class="mb-2">
-        <%= addr.label :country %><br>
-        <%= addr.text_field :country, class: "form-control" %>
-      </div>
-
-      <div class="form-check">
-        <%= addr.check_box :_destroy, class: "form-check-input" %>
-        <%= addr.label :_destroy, "Remove this address", class: "form-check-label" %>
-      </div>
-
-    </div>
-  <% end %>
-
-  <%= f.submit "Update User", class: "btn btn-primary" %>
-<% end %>
-
-<%= link_to "Back", employees_path, class: "btn btn-secondary mt-3" %>

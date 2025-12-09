@@ -1,70 +1,123 @@
-<h1>Add Employee</h1>
+<div class="form-container">
+  <div class="form-card">
+    <h1 class="form-title">Add New Employee</h1>
+    
+    <% if @employee.errors.any? %>
+      <div class="error-messages">
+        <h3><%= pluralize(@employee.errors.count, "error") %> prohibited this employee from being saved:</h3>
+        <ul>
+          <% @employee.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    
+    <%= form_with model: @employee, url: employees_path do |f| %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-input", placeholder: "Enter email address" %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :role, class: "form-label" %>
+            <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, { prompt: "Select role" }, class: "form-input" %>
+          </div>
+        </div>
+      </div>
 
-<%= form_with model: @employee, url: employees_path do |f| %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :password, class: "form-label" %>
+            <%= f.password_field :password, class: "form-input", placeholder: "Enter password" %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :password_confirmation, "Confirm Password", class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-input", placeholder: "Confirm password" %>
+          </div>
+        </div>
+      </div>
 
-  <div class="mb-3">
-    <%= f.label :email %><br>
-    <%= f.email_field :email, class: "form-control" %>
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :gender, class: "form-label" %>
+            <%= f.select :gender, User.genders.keys.map { |g| [g.titleize, g] }, { prompt: "Select gender" }, class: "form-input" %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :age, class: "form-label" %>
+            <%= f.number_field :age, class: "form-input", placeholder: "Enter age" %>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-title">Address Information</h3>
+
+      <%= f.fields_for :addresses do |addr| %>
+        <%= addr.hidden_field :address_type, value: 'current' %>
+        <div class="address-section">
+          
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :line1, "Address Line 1", class: "form-label" %>
+                <%= addr.text_field :line1, class: "form-input", placeholder: "Street address" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :line2, "Address Line 2", class: "form-label" %>
+                <%= addr.text_field :line2, class: "form-input", placeholder: "Apartment, suite, etc." %>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :city, class: "form-label" %>
+                <%= addr.text_field :city, class: "form-input", placeholder: "City" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :state, class: "form-label" %>
+                <%= addr.text_field :state, class: "form-input", placeholder: "State" %>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :zip, "ZIP Code", class: "form-label" %>
+                <%= addr.text_field :zip, class: "form-input", placeholder: "ZIP code" %>
+              </div>
+            </div>
+            <div class="form-col">
+              <div class="form-group">
+                <%= addr.label :country, class: "form-label" %>
+                <%= addr.text_field :country, class: "form-input", placeholder: "Country" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="btn-group">
+        <%= f.submit "Create Employee", class: "btn-primary" %>
+        <%= link_to "Back", employees_path, class: "btn-secondary" %>
+      </div>
+    <% end %>
   </div>
+</div>
 
-  <div class="mb-3">
-    <%= f.label :password %><br>
-    <%= f.password_field :password, class: "form-control" %>
-  </div>
 
-  <div class="mb-3">
-    <%= f.label :password_confirmation %><br>
-    <%= f.password_field :password_confirmation, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :role %><br>
-    <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, {}, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :gender %><br>
-    <%= f.select :gender, User.genders.keys.map { |g| [g.titleize, g] }, {}, class: "form-control" %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :age %><br>
-    <%= f.number_field :age, class: "form-control" %>
-  </div>
-
-  <h3>Addresses</h3>
-  <%= f.fields_for :addresses do |addr| %>
-    <div class="mb-2">
-      <%= addr.label :address_type %><br>
-      <%= addr.select :address_type, Address.address_types.keys.map { |a| [a.titleize, a] }, {}, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :line1 %><br>
-      <%= addr.text_field :line1, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :line2 %><br>
-      <%= addr.text_field :line2, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :city %><br>
-      <%= addr.text_field :city, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :state %><br>
-      <%= addr.text_field :state, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :zip %><br>
-      <%= addr.text_field :zip, class: "form-control" %>
-    </div>
-    <div class="mb-2">
-      <%= addr.label :country %><br>
-      <%= addr.text_field :country, class: "form-control" %>
-    </div>
-  <% end %>
-
-  <%= f.submit "Create Employee", class: "btn btn-success" %>
-<% end %>
-
-<%= link_to "Back", employees_path, class: "btn btn-secondary mt-3" %>

@@ -1,19 +1,20 @@
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
   before_action :check_admin
-  before_action :set_employee, only: [:edit, :update, :freeze_account]
+  before_action :set_employee, only: [:edit, :update]
   layout "dashboard"
 
   def index
     @employees = User.all
+    @employees = @employees.where("email LIKE ?", "%#{params[:email]}%") if params[:email].present?
+    @employees = @employees.where(role: params[:role]) if params[:role].present?
+    @employees = @employees.where(is_frozen: params[:status] == "frozen") if params[:status].present?
+    @employees = @employees.page(params[:page]).per(3)
   end
 
   def new
     @employee = User.new
-
-    # Build current & permanent addresses
     @employee.addresses.build(address_type: :current)
-    @employee.addresses.build(address_type: :permanent)
   end
 
   def create
@@ -23,19 +24,13 @@ class EmployeesController < ApplicationController
     if @employee.save
       redirect_to employees_path, notice: "Employee created successfully."
     else
+      @employee.addresses.build(address_type: :current) if @employee.addresses.empty?
       render :new
     end
   end
 
   def edit
-    # Ensure BOTH addresses exist when editing
-    if @employee.addresses.current.blank?
-      @employee.addresses.build(address_type: :current)
-    end
-
-    if @employee.addresses.permanent.blank?
-      @employee.addresses.build(address_type: :permanent)
-    end
+    @employee.addresses.build(address_type: :current) if @employee.addresses.empty?
   end
 
   def update
@@ -44,11 +39,6 @@ class EmployeesController < ApplicationController
     else
       render :edit
     end
-  end
-
-  def freeze_account
-    @employee.update(is_frozen: true)
-    redirect_to employees_path, notice: "Employee account frozen."
   end
 
   def attendance
@@ -69,9 +59,6 @@ class EmployeesController < ApplicationController
   end
 
   def employee_params
-    params.require(:user).permit(
-      :email, :password, :password_confirmation, :role, :gender, :age,
-      addresses_attributes: [:id, :address_type, :line1, :line2, :city, :state, :zip, :country, :_destroy]
-    )
+    params.require(:user).permit(:role, :age, addresses_attributes: [:id, :line1, :line2, :city, :state, :zip, :country])
   end
 end

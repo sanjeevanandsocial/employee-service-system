@@ -1,0 +1,242 @@
+<style>
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .form-container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 40px 15px 15px;
+  }
+  
+  .form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 100%;
+  }
+  
+  .form-header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  
+
+  
+  .form-title {
+    color: #1e293b;
+    margin: 0;
+    font-weight: 700;
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+  
+
+  
+  .project-info {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 4px solid #667eea;
+  }
+  
+  .project-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+  
+  .current-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #475569;
+  }
+  
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .status-planned {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-in-progress {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  
+  .status-on-hold {
+    background: #fed7d7;
+    color: #c53030;
+  }
+  
+  .status-completed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+  
+  .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  }
+  
+  .no-options {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+    border: 2px dashed #d1d5db;
+    font-size: 13px;
+  }
+  
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  }
+  
+  .btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+  }
+  
+  .btn-secondary:hover {
+    background: #e2e8f0;
+    color: #334155;
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="form-container">
+  <div class="form-card">
+    <div class="form-header">
+      <h1 class="form-title">Update Project Status</h1>
+    </div>
+    
+    <div class="project-info">
+      <div class="project-title">
+        <i class="fas fa-project-diagram"></i> <%= @project.title %>
+      </div>
+      <div class="current-status">
+        <span>Current Status:</span>
+        <% 
+          status_class = case @project.status
+                        when "planned" then "status-planned"
+                        when "in-progress" then "status-in-progress"
+                        when "on-hold" then "status-on-hold"
+                        when "completed" then "status-completed"
+                        end
+        %>
+        <span class="status-badge <%= status_class %>">
+          <%= @project.status.gsub('-', ' ').titleize %>
+        </span>
+      </div>
+    </div>
+    
+    <%= form_with model: @project, url: project_path(@project), method: :patch, local: true do |f| %>
+      <div class="form-group">
+        <%= f.label :status, "Change Status To:", class: "form-label" %>
+        <% 
+          status_options = case @project.status
+                          when "planned"
+                            [["In Progress", "in_progress"]]
+                          when "in_progress"
+                            [["On Hold", "on-hold"], ["Completed", "completed"]]
+                          else
+                            []
+                          end
+        %>
+        
+        <% if status_options.any? %>
+          <%= f.select :status, status_options, { prompt: "Select new status" }, { class: "form-select" } %>
+        <% else %>
+          <div class="no-options">
+            <i class="fas fa-info-circle"></i>
+            No status changes available for current Project.
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="btn-group">
+        <% if status_options.any? %>
+          <%= f.submit class: "btn btn-primary" do %>
+            <i class="fas fa-check"></i> Update Status
+          <% end %>
+        <% end %>
+        <%= link_to projects_path, class: "btn btn-secondary" do %>
+          <i class="fas fa-times"></i> Cancel
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

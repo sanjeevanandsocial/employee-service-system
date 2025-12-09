@@ -1,35 +1,86 @@
-<h1>Employees</h1>
+<div class="page-header">
+  <h1 class="page-title">Employees</h1>
+  <div style="display: flex; gap: 10px;">
+    <button type="button" onclick="toggleFilter()" class="toggle-filter-btn" id="toggleBtn">
+      <i class="fas fa-filter"></i> Show Filters
+    </button>
+    <%= link_to new_employee_path, class: "add-btn" do %>
+      <i class="fas fa-plus"></i> Add Employee
+    <% end %>
+  </div>
+</div>
 
-<%= link_to "Add Employee", new_employee_path, class: "btn btn-primary" %>
+<div class="filter-section" id="filterSection" style="display: none;">
+  <%= form_with url: employees_path, method: :get, class: "filter-form" do |f| %>
+    <%= f.text_field :email, value: params[:email], placeholder: "Search by email", class: "filter-input" %>
+    <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, { include_blank: "All Roles" }, { selected: params[:role], class: "filter-input" } %>
+    <%= f.select :status, [["Active", "active"], ["Frozen", "frozen"]], { include_blank: "All Status" }, { selected: params[:status], class: "filter-input" } %>
+    <%= f.button type: :submit, class: "filter-btn" do %>
+      <i class="fas fa-search"></i> Search
+    <% end %>
+    <%= link_to employees_path, class: "clear-btn" do %>
+      <i class="fas fa-times"></i> Clear
+    <% end %>
+  <% end %>
+</div>
 
-<table class="table mt-3">
+<script>
+  function toggleFilter() {
+    const filterSection = document.getElementById('filterSection');
+    const toggleBtn = document.getElementById('toggleBtn');
+    if (filterSection.style.display === 'none') {
+      filterSection.style.display = 'block';
+      toggleBtn.innerHTML = '<i class="fas fa-filter"></i> Hide Filters';
+    } else {
+      filterSection.style.display = 'none';
+      toggleBtn.innerHTML = '<i class="fas fa-filter"></i> Show Filters';
+    }
+  }
+</script>
+
+<div class="total-records">
+  Total Records: <%= @employees.total_count %>
+</div>
+
+<table class="employees-table">
   <thead>
     <tr>
       <th>Email</th>
       <th>Role</th>
       <th>Status</th>
-      <th>Actions</th>
+      <th style="text-align: right;">Actions</th>
     </tr>
   </thead>
-
   <tbody>
-    <% @employees.each do |emp| %>
+    <% if @employees.any? %>
+      <% @employees.each do |emp| %>
+        <tr>
+          <td><%= emp.email %></td>
+          <td><%= emp.role.capitalize %></td>
+          <td>
+            <span class="status-badge <%= emp.is_frozen ? 'status-frozen' : 'status-active' %>">
+              <%= emp.is_frozen ? "Frozen" : "Active" %>
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <%= link_to edit_employee_path(emp), class: "action-btn btn-edit" do %>
+              <i class="fas fa-edit"></i> Edit
+            <% end %>
+            
+            <%= link_to attendance_employee_path(emp), class: "action-btn btn-attendance" do %>
+              <i class="fas fa-calendar-check"></i> Attendance
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% else %>
       <tr>
-        <td><%= emp.email %></td>
-        <td><%= emp.role.capitalize %></td>
-        <td><%= emp.is_frozen ? "Frozen" : "Active" %></td>
-        <td>
-  <%= link_to "Edit", edit_employee_path(emp), class: "btn btn-sm btn-warning" %> | 
-  <%= link_to "Attendance", attendance_employee_path(emp) %> |
-  
-  <% unless emp.is_frozen %>
-    <%= link_to "Freeze", freeze_account_employee_path(emp),
-                method: :patch,
-                data: { confirm: "Are you sure?" },
-                class: "btn btn-sm btn-danger" %>
-  <% end %>
-</td>
+        <td colspan="4" class="no-records-message">No Records Found</td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<div class="pagination-container">
+  <%= paginate @employees %>
+</div>

@@ -1,100 +1,190 @@
-<h3 style="margin-bottom: 20px; margin-top: 0; color: #3949ab;">
-  <%= @employee.email %> — Attendance for 
-  <%= @date.strftime("%B %Y") %>
-</h3>
-<div class="nav-buttons">
-  
-  <!-- Previous Month -->
-  <%= link_to "◀ Previous Month", 
-      attendance_employee_path(@employee, month: (@date - 1.month).strftime("%Y-%m-01")),
-      class: "month-btn" %>
-
-  <!-- Next Month (Hidden for current month) -->
-  <% unless @date.month == Date.today.month && @date.year == Date.today.year %>
-    <%= link_to "Next Month ▶", 
-        attendance_employee_path(@employee, month: (@date + 1.month).strftime("%Y-%m-01")),
-        class: "month-btn" %>
-  <% else %>
-    <span></span> <!-- Keeps layout aligned -->
-  <% end %>
-
-</div>
-
 <style>
-  .calendar-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: Arial, sans-serif;
-  }
-
-  .calendar-table th {
-    background: #3949ab;
+  .attendance-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 12px 0;
-    font-size: 15px;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
   }
-
-  .calendar-table td {
-    border: 1px solid #ddd;
-    width: 14.28%;
-    vertical-align: top;
-    background: white;
-    padding: 6px;
-    position: relative;
+  
+  .employee-info {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
   }
-
-  .outside-month {
-    background: #f3f4f7 !important;
-    color: #777;
+  
+  .month-year {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
   }
-
-  .day-number {
-    font-weight: bold;
-    display: inline-block;
-    margin-bottom: 5px;
-  }
-
-  .today-highlight {
-    background: #1e88e5 !important;
-    color: white;
-    border-radius: 50%;
-    padding: 4px 8px;
-  }
-
-  .attendance-select {
-    margin-top: 8px;
-    width: 90%;
-    padding: 4px;
-  }
-
+  
   .nav-buttons {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 25px;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
   }
-
+  
   .month-btn {
-    background: #3949ab;
-    color: white !important;
-    padding: 10px 18px;
-    border-radius: 6px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    transition: 0.2s ease-in-out;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
-
+  
   .month-btn:hover {
-    background: #1e88e5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    color: white;
+    text-decoration: none;
   }
-
-  /* Disabled button style */
-  .month-btn.disabled {
-    background: #9fa8da;
-    pointer-events: none;
-    opacity: 0.6;
+  
+  .calendar-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .calendar-table th {
+    background: #f8fafc;
+    color: #475569;
+    padding: 16px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .calendar-table td {
+    border: 1px solid #f1f5f9;
+    width: 14.28%;
+    height: 100px;
+    vertical-align: top;
+    background: white;
+    padding: 12px 8px;
+    position: relative;
+    transition: background-color 0.2s ease;
+  }
+  
+  .calendar-table td:hover {
+    background: #f8fafc;
+  }
+  
+  .outside-month {
+    background: #f8fafc !important;
+    color: #94a3b8;
+  }
+  
+  .day-number {
+    font-weight: 600;
+    font-size: 16px;
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+  
+  .today-highlight {
+    color: #3b82f6;
+    font-weight: 700;
+    border-bottom: 3px solid #3b82f6;
+    padding-bottom: 2px;
+  }
+  
+  .today-cell {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  }
+  
+  .attendance-select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: white;
+    transition: all 0.2s ease;
+  }
+  
+  .attendance-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .attendance-select:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+  
+  .back-btn {
+    background: #64748b;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .back-btn:hover {
+    background: #475569;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
   }
 </style>
+
+<%= link_to employees_path, class: "back-btn" do %>
+  <i class="fas fa-arrow-left"></i> Back to Employees
+<% end %>
+
+<div class="attendance-header">
+  <div class="employee-info">
+    <i class="fas fa-user"></i> <%= @employee.email %>
+  </div>
+  <h2 class="month-year">
+    <i class="fas fa-calendar-alt"></i> <%= @date.strftime("%B %Y") %> Attendance
+  </h2>
+</div>
+
+<div class="nav-buttons">
+  <%= link_to attendance_employee_path(@employee, month: (@date - 1.month).strftime("%Y-%m-01")), class: "month-btn" do %>
+    <i class="fas fa-chevron-left"></i> Previous Month
+  <% end %>
+  
+  <% unless @date.month == Date.today.month && @date.year == Date.today.year %>
+    <%= link_to attendance_employee_path(@employee, month: (@date + 1.month).strftime("%Y-%m-01")), class: "month-btn" do %>
+      Next Month <i class="fas fa-chevron-right"></i>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="calendar-container">
 
 <table class="calendar-table">
   <tr>
@@ -121,10 +211,11 @@
       <% 7.times do %>
         <% outside = (current_day.month != @date.month) %>
 
-        <td class="<%= 'outside-month' if outside %>">
+        <% is_today = current_day == today && @date.month == today.month && @date.year == today.year %>
+        <td class="<%= 'outside-month' if outside %> <%= 'today-cell' if is_today && !outside %>">
 
           <% # DAY NUMBER + TODAY HIGHLIGHT %>
-          <% if current_day == today && @date.month == today.month && @date.year == today.year %>
+          <% if is_today && !outside %>
             <span class="day-number today-highlight"><%= current_day.day %></span>
           <% else %>
             <span class="day-number"><%= current_day.day %></span>
@@ -155,3 +246,4 @@
   <% end %>
 
 </table>
+</div>
