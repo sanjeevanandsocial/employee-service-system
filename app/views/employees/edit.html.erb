@@ -17,14 +17,29 @@
       <div class="form-row">
         <div class="form-col">
           <div class="form-group">
-            <%= f.label :email, class: "form-label" %>
-            <%= f.email_field :email, class: "form-input", disabled: true %>
+            <%= f.label :id, "Employee ID", class: "form-label" %>
+            <%= f.number_field :id, class: "form-input", disabled: true %>
           </div>
         </div>
         <div class="form-col">
           <div class="form-group">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-input", disabled: true %>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
             <%= f.label :role, class: "form-label" %>
             <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, { prompt: "Select role" }, class: "form-input" %>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :age, class: "form-label" %>
+            <%= f.number_field :age, class: "form-input" %>
           </div>
         </div>
       </div>
@@ -38,8 +53,8 @@
         </div>
         <div class="form-col">
           <div class="form-group">
-            <%= f.label :age, class: "form-label" %>
-            <%= f.number_field :age, class: "form-input" %>
+            <%= f.label :reporting_person_id, "Reporting Person", class: "form-label" %>
+            <%= f.select :reporting_person_id, User.where.not(id: @employee.id).map { |u| [u.email, u.id] }, { prompt: "Select reporting person" }, class: "form-input" %>
           </div>
         </div>
       </div>

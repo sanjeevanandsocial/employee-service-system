@@ -1,0 +1,78 @@
+<link rel="stylesheet" href="<%= asset_path 'employees.css' %>">
+<link rel="stylesheet" href="<%= asset_path 'projects.css' %>">
+
+<div class="page-header">
+  <h1>Create New Task</h1>
+  <%= link_to details_project_path(@project), class: "btn-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Back
+  <% end %>
+</div>
+
+<div class="form-container">
+  <%= form_with model: [@project, @task], local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :title, "Task Title", class: "form-label" %>
+      <%= f.text_field :title, class: "form-input", placeholder: "Enter task title" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :description, "Description", class: "form-label" %>
+      <%= f.text_area :description, class: "form-input", rows: 4, placeholder: "Enter task description" %>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :priority, "Priority", class: "form-label" %>
+        <%= f.select :priority, Task.priorities.keys.map { |k| [k.titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :due_date, "Due Date", class: "form-label" %>
+        <%= f.date_field :due_date, class: "form-input" %>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :status, "Status", class: "form-label" %>
+        <%= f.select :status, Task.statuses.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :assigned_to_id, "Assigned To", class: "form-label" %>
+        <%= f.select :assigned_to_id, @project.users.map { |u| [u.email, u.id] }, { prompt: "Select employee" }, class: "form-select" %>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :category, "Category", class: "form-label" %>
+        <%= f.select :category, Task.categories.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :estimated_time, "Estimated Time", class: "form-label" %>
+        <%= f.text_field :estimated_time, class: "form-input", placeholder: "e.g., 5 hours, 2 days" %>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <%= f.submit "Create Task", class: "btn-primary" %>
+      <%= link_to "Cancel", details_project_path(@project), class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.querySelector('input[name="task[title]"]').addEventListener('input', function(e) {
+    if (this.value.length === 1) {
+      this.value = this.value.charAt(0).toUpperCase();
+    }
+  });
+
+  document.querySelector('textarea[name="task[description]"]').addEventListener('input', function(e) {
+    if (this.value.length === 1) {
+      this.value = this.value.charAt(0).toUpperCase();
+    }
+  });
+</script>

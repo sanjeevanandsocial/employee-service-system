@@ -18,7 +18,7 @@
       body {
         font-family: 'Inter', sans-serif;
         background: #f8fafc;
-        min-height: 100vh;
+        min-height: 80vh;
       }
 
       /* SIDEBAR */
@@ -32,7 +32,7 @@
         left: 0;
         bottom: 0;
         box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-              }
+      }
 
       .sidebar-header {
         padding: 0 30px 40px;
@@ -80,6 +80,35 @@
         margin-right: 12px;
         width: 20px;
         text-align: center;
+      }
+
+      .submenu {
+        padding-left: 30px;
+        display: none;
+      }
+
+      .submenu.open {
+        display: block;
+      }
+
+      .submenu a {
+        padding: 10px 30px;
+        font-size: 14px;
+      }
+
+      .menu-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .menu-toggle i.fa-chevron-down {
+        transition: transform 0.3s ease;
+      }
+
+      .menu-toggle.open i.fa-chevron-down {
+        transform: rotate(180deg);
       }
 
       /* TOP BAR */
@@ -162,7 +191,7 @@
       /* CONTENT AREA */
       .content-area {
         margin-left: 280px;
-        margin-top: 70px;
+        margin-top: 50px;
         padding: 30px;
         min-height: calc(100vh - 70px);
         background: white;
@@ -201,6 +230,18 @@
         border-bottom: none;
       }
 
+      /* Date columns styling */
+      .date-column {
+        font-size: 11px;
+        white-space: nowrap;
+        min-width: 80px;
+      }
+
+      /* OD requests table styling */
+      .od-requests-table tbody tr rd {
+        font-size: 12px;
+      }
+
       /* BUTTONS */
       .btn {
         display: inline-flex;
@@ -237,12 +278,7 @@
       }
 
       .btn-secondary {
-        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
-      }
-
-      .btn-secondary:hover {
-        box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+        background: #64748b;
       }
 
       .page-title {
@@ -289,14 +325,46 @@
       <nav class="sidebar-nav">
         <ul>
           <li><%= link_to dashboard_path, class: request.path == dashboard_path ? 'active' : '' do %>
-            <i class="fas fa-chart-pie"></i> Dashboard
+            <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
           <% end %></li>
+          <% if current_user.has_menu_access?('employees') %>
           <li><%= link_to employees_path, class: request.path.include?('employees') ? 'active' : '' do %>
-            <i class="fas fa-users"></i> Employees
+            <i class="fas fa-users"></i> <span>Employees</span>
           <% end %></li>
+          <% end %>
+          <% if current_user.has_menu_access?('projects') %>
           <li><%= link_to projects_path, class: request.path.include?('projects') ? 'active' : '' do %>
-            <i class="fa-solid fa-diagram-project"></i> Projects
+            <i class="fa-solid fa-diagram-project"></i> <span>Projects</span>
           <% end %></li>
+          <% end %>
+          <% if current_user.has_menu_access?('tasks') %>
+          <li><%= link_to tasks_path, class: request.path == tasks_path ? 'active' : '' do %>
+            <i class="fas fa-tasks"></i> <span>Tasks</span>
+          <% end %></li>
+          <% end %>
+          <li>
+            <a href="#" class="menu-toggle" id="requestsToggle" onclick="toggleSubmenu(event)">
+              <span><i class="fas fa-file-alt"></i> <span>Requests</span></span>
+              <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+            </a>
+            <ul class="submenu" id="requestsSubmenu">
+              <li><%= link_to od_requests_path do %><i class="fas fa-calendar-check"></i> <span>OD Requests</span><% end %></li>
+              <li><%= link_to leave_requests_path do %><i class="fas fa-umbrella-beach"></i> <span>Leave Requests</span><% end %></li>
+              <% if current_user.has_menu_access?('approve_requests') %>
+              <li><%= link_to approve_requests_path do %><i class="fas fa-check-circle"></i> <span>Approve Requests</span><% end %></li>
+              <% end %>
+            </ul>
+          </li>
+          <% if current_user.has_menu_access?('holidays') %>
+          <li><%= link_to holidays_path, class: request.path == holidays_path ? 'active' : '' do %>
+            <i class="fas fa-calendar-alt"></i> <span>Holidays</span>
+          <% end %></li>
+          <% end %>
+          <% if current_user.role == 'admin' %>
+          <li><%= link_to access_control_path, class: request.path == access_control_path ? 'active' : '' do %>
+            <i class="fas fa-shield-alt"></i> <span>Access Control</span>
+          <% end %></li>
+          <% end %>
         </ul>
       </nav>
     </div>
@@ -323,5 +391,17 @@
     <div class="content-area">
       <%= yield %>
     </div>
+
+    <script>
+      function toggleSubmenu(event) {
+        event.preventDefault();
+        const toggle = document.getElementById('requestsToggle');
+        const submenu = document.getElementById('requestsSubmenu');
+        toggle.classList.toggle('open');
+        submenu.classList.toggle('open');
+      }
+
+
+    </script>
   </body>
 </html>

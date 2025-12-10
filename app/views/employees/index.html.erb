@@ -4,14 +4,17 @@
     <button type="button" onclick="toggleFilter()" class="toggle-filter-btn" id="toggleBtn">
       <i class="fas fa-filter"></i> Show Filters
     </button>
+    <% if current_user.has_permission?('employee_create') %>
     <%= link_to new_employee_path, class: "add-btn" do %>
       <i class="fas fa-plus"></i> Add Employee
+    <% end %>
     <% end %>
   </div>
 </div>
 
 <div class="filter-section" id="filterSection" style="display: none;">
   <%= form_with url: employees_path, method: :get, class: "filter-form" do |f| %>
+    <%= f.number_field :id, value: params[:id], placeholder: "Search by ID", class: "filter-input" %>
     <%= f.text_field :email, value: params[:email], placeholder: "Search by email", class: "filter-input" %>
     <%= f.select :role, User.roles.keys.map { |r| [r.titleize, r] }, { include_blank: "All Roles" }, { selected: params[:role], class: "filter-input" } %>
     <%= f.select :status, [["Active", "active"], ["Frozen", "frozen"]], { include_blank: "All Status" }, { selected: params[:status], class: "filter-input" } %>
@@ -45,6 +48,7 @@
 <table class="employees-table">
   <thead>
     <tr>
+      <th>#ID</th>
       <th>Email</th>
       <th>Role</th>
       <th>Status</th>
@@ -55,7 +59,8 @@
     <% if @employees.any? %>
       <% @employees.each do |emp| %>
         <tr>
-          <td><%= emp.email %></td>
+          <td><%= emp.id %></td>
+          <td><span class="email-cell"><i class="far fa-user-circle"></i><span class="email-text"><%= emp.email %></span></span></td>
           <td><%= emp.role.capitalize %></td>
           <td>
             <span class="status-badge <%= emp.is_frozen ? 'status-frozen' : 'status-active' %>">
@@ -63,24 +68,29 @@
             </span>
           </td>
           <td style="text-align: right;">
+            <% if current_user.has_permission?('employee_edit') %>
             <%= link_to edit_employee_path(emp), class: "action-btn btn-edit" do %>
               <i class="fas fa-edit"></i> Edit
             <% end %>
-            
-            <%= link_to attendance_employee_path(emp), class: "action-btn btn-attendance" do %>
-              <i class="fas fa-calendar-check"></i> Attendance
             <% end %>
           </td>
         </tr>
       <% end %>
     <% else %>
       <tr>
-        <td colspan="4" class="no-records-message">No Records Found</td>
+        <td colspan="5" class="no-records-message">No Records Found</td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
-<div class="pagination-container">
-  <%= paginate @employees %>
-</div>
+<% if @employees.any? %>
+  <div class="table-footer">
+    <%= link_to employees_path(format: :csv, id: params[:id], email: params[:email], role: params[:role], status: params[:status]), class: "export-csv-btn" do %>
+      <i class="fas fa-download"></i> Export as CSV
+    <% end %>
+    <div class="pagination-container">
+      <%= paginate @employees %>
+    </div>
+  </div>
+<% end %>

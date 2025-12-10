@@ -9,6 +9,12 @@
 
       <h2 class="title">Login</h2>
 
+      <% if alert %>
+        <div style="background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+          <div style="color: #991b1b; font-size: 14px; font-weight: 500;"><%= alert %></div>
+        </div>
+      <% end %>
+
       <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
 
         <!-- Email -->

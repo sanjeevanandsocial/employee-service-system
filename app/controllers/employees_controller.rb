@@ -1,15 +1,32 @@
+require 'csv'
+
 class EmployeesController < ApplicationController
   before_action :authenticate_user!
-  before_action :check_admin
+  before_action :check_admin, except: [:index, :attendance, :new, :create, :edit, :update]
   before_action :set_employee, only: [:edit, :update]
   layout "dashboard"
 
   def index
-    @employees = User.all
+    redirect_to dashboard_path unless current_user.has_menu_access?('employees')
+    
+    @employees = case current_user.get_permission('employee_view')
+                 when 'all'
+                   User.all
+                 when 'assigned'
+                   User.where(reporting_person: current_user)
+                 else
+                   User.none
+                 end
+    
+    @employees = @employees.where(id: params[:id]) if params[:id].present?
     @employees = @employees.where("email LIKE ?", "%#{params[:email]}%") if params[:email].present?
     @employees = @employees.where(role: params[:role]) if params[:role].present?
     @employees = @employees.where(is_frozen: params[:status] == "frozen") if params[:status].present?
-    @employees = @employees.page(params[:page]).per(3)
+    
+    respond_to do |format|
+      format.html { @employees = @employees.page(params[:page]).per(3) }
+      format.csv { send_data generate_csv(@employees), filename: "employees-#{Date.today}.csv" }
+    end
   end
 
   def new
@@ -59,6 +76,15 @@ class EmployeesController < ApplicationController
   end
 
   def employee_params
-    params.require(:user).permit(:role, :age, addresses_attributes: [:id, :line1, :line2, :city, :state, :zip, :country])
+    params.require(:user).permit(:role, :age, :reporting_person_id, addresses_attributes: [:id, :line1, :line2, :city, :state, :zip, :country])
+  end
+
+  def generate_csv(employees)
+    CSV.generate(headers: true) do |csv|
+      csv << ["ID", "Email", "Role", "Gender", "Age", "Status", "Created At"]
+      employees.each do |emp|
+        csv << [emp.id, emp.email, emp.role.capitalize, emp.gender.capitalize, emp.age, emp.is_frozen ? "Frozen" : "Active", emp.created_at.strftime("%Y-%m-%d")]
+      end
+    end
   end
 end

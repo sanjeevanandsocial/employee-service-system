@@ -1,0 +1,49 @@
+<h1 class="page-title">Approve OD Requests</h1>
+
+<% if @od_requests.any? %>
+  <table class="employees-table">
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>From Date</th>
+        <th>To Date</th>
+        <th>Reason</th>
+        <th>Status</th>
+        <th>Applied On</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @od_requests.each do |request| %>
+        <tr>
+          <td><%= request.user.email %></td>
+          <td><%= request.from_date.strftime('%-d %b %Y') %></td>
+          <td><%= request.to_date.strftime('%-d %b %Y') %></td>
+          <td><%= request.reason %></td>
+          <td>
+            <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; 
+              background: <%= request.pending? ? '#fef3c7' : request.approved? ? '#d1fae5' : '#fee2e2' %>; 
+              color: <%= request.pending? ? '#92400e' : request.approved? ? '#065f46' : '#991b1b' %>;">
+              <%= request.status.titleize %>
+            </span>
+          </td>
+          <td><%= request.created_at.strftime('%-d %b %Y') %></td>
+          <td tyle="display: flex; justify-content: right;">
+            <% if request.pending? %>
+              <%= button_to "Approve", update_status_od_request_path(request, status: 'approved'), method: :patch, style: "background: #10b981; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; border-radius: 4px; margin-right: 5px;" %>
+              <%= button_to "Reject", update_status_od_request_path(request, status: 'rejected'), method: :patch, style: "background: #ef4444; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; border-radius: 4px;" %>
+            <% else %>
+              <span style="color: #64748b; font-size: 12px;">No action needed</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-calendar-check"></i></div>
+    <h2 class="empty-title">No Pending Requests</h2>
+    <p class="empty-message">There are no OD requests to approve.</p>
+  </div>
+<% end %>

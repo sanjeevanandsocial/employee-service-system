@@ -1,0 +1,110 @@
+<link rel="stylesheet" href="<%= asset_path 'employees.css' %>">
+<link rel="stylesheet" href="<%= asset_path 'projects.css' %>">
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<div class="page-header">
+  <h1>Edit Task</h1>
+  <%= link_to details_project_path(@project), class: "btn-secondary" do %>
+    <i class="fas fa-arrow-left"></i> Back
+  <% end %>
+</div>
+
+<div class="form-container">
+  <%= form_with model: [@project, @task], local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :title, "Task Title", class: "form-label" %>
+      <%= f.text_field :title, class: "form-input" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :description, "Description", class: "form-label" %>
+      <div id="quill-editor-edit" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; min-height: 150px;"></div>
+      <%= f.hidden_field :description, id: "task_description_edit" %>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :priority, "Priority", class: "form-label" %>
+        <%= f.select :priority, Task.priorities.keys.map { |k| [k.titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :due_date, "Due Date", class: "form-label" %>
+        <%= f.date_field :due_date, class: "form-input" %>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :status, "Status", class: "form-label" %>
+        <%= f.select :status, Task.statuses.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :assigned_to_id, "Assigned To", class: "form-label" %>
+        <%= f.select :assigned_to_id, @project.users.map { |u| [u.email, u.id] }, { prompt: "Select employee" }, class: "form-select" %>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :category, "Category", class: "form-label" %>
+        <%= f.select :category, Task.categories.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :estimated_time, "Estimated Time", class: "form-label" %>
+        <%= f.text_field :estimated_time, class: "form-input" %>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <%= f.submit "Update Task", class: "btn-primary" %>
+      <%= link_to "Cancel", details_project_path(@project), class: "btn-secondary" %>
+    </div>
+  <% end %>
+</div>
+
+<div style="margin-top: 40px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+  <h3 style="margin-bottom: 15px; color: #1e293b;">Activity Log</h3>
+  <% if @task.task_activities.any? %>
+    <% @task.task_activities.order(created_at: :asc).each do |activity| %>
+      <div style="padding: 10px 0; border-bottom: 1px solid #e2e8f0;">
+        <p style="margin: 0; color: #64748b; font-size: 14px;"><%= activity.comment %></p>
+      </div>
+    <% end %>
+  <% else %>
+    <p style="color: #94a3b8;">No activity yet.</p>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const quillEdit = new Quill('#quill-editor-edit', {
+      theme: 'snow',
+      placeholder: 'Enter task description...',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['clean']
+        ]
+      }
+    });
+
+    // Load existing description
+    const existingDesc = '<%= raw @task.description %>';
+    if (existingDesc) {
+      quillEdit.root.innerHTML = existingDesc;
+    }
+
+    // Update hidden field on text change
+    quillEdit.on('text-change', function() {
+      document.getElementById('task_description_edit').value = quillEdit.root.innerHTML;
+    });
+
+    // Set initial value
+    document.getElementById('task_description_edit').value = quillEdit.root.innerHTML;
+  });
+</script>

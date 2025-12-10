@@ -1,0 +1,79 @@
+<div class="page-header">
+  <h1 class="page-title">Pending <%= @request_type == 'od' ? 'OD' : 'Leave' %> Requests</h1>
+  <div style="display: flex; gap: 10px;">
+    <% if @request_type == 'od' %>
+      <%= link_to approve_requests_path(type: 'leave'), class: "btn btn-secondary", style: "background: #64748b; box-shadow: none; transform: none;" do %>
+        <i class="fas fa-umbrella-beach"></i> Show Pending Leave Requests (<%= @pending_leave_count %>)
+      <% end %>
+    <% else %>
+      <%= link_to approve_requests_path(type: 'od'), class: "btn btn-secondary", style: "background: #64748b; box-shadow: none; transform: none;" do %>
+        <i class="fas fa-calendar-check"></i> Show Pending OD Requests (<%= @pending_od_count %>)
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if @requests.any? %>
+  <table class="employees-table">
+    <thead>
+      <tr style="font-size: 12px;">
+        <th>Employee</th>
+        <th style="text-align: right;">From Date</th>
+        <th style="text-align: right;">To Date</th>
+        <th style="text-align: right;">Total Days</th>
+        <th>Reason</th>
+        <th style="text-align: center;">Status</th>
+        <th style="text-align: right;">Applied On</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @requests.each do |request| %>
+        <tr style="font-size: 12px;">
+          <td>(<%= request.user.id %>) <%= request.user.email %></td>
+          <td class="date-column" style="text-align: right;"><%= request.from_date.strftime('%-d %b %Y') %></td>
+          <td class="date-column" style="text-align: right;"><%= request.to_date.strftime('%-d %b %Y') %></td>
+          <td style="text-align: right;"><%= request.total_days %></td>
+          <td><%= request.reason %></td>
+          <td style="text-align: center;">
+            <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; 
+              background: <%= request.pending? ? '#fef3c7' : request.approved? ? '#d1fae5' : request.cancelled? ? '#f3f4f6' : '#fee2e2' %>; 
+              color: <%= request.pending? ? '#92400e' : request.approved? ? '#065f46' : request.cancelled? ? '#6b7280' : '#991b1b' %>;">
+              <%= request.status.titleize %>
+            </span>
+          </td>
+          <td class="date-column" style="text-align: right;"><%= request.created_at.strftime('%-d %b %Y') %></td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 4px;">
+              <% if request.pending? %>
+                <% if @request_type == 'leave' %>
+                  <%= link_to update_leave_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff;" do %>
+                    <i class="fas fa-check"></i> Approve
+                  <% end %>
+                  <%= link_to update_leave_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff;" do %>
+                    <i class="fas fa-times"></i> Reject
+                  <% end %>
+                <% else %>
+                  <%= link_to update_od_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff;" do %>
+                    <i class="fas fa-check"></i> Approve
+                  <% end %>
+                  <%= link_to update_od_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff;" do %>
+                    <i class="fas fa-times"></i> Reject
+                  <% end %>
+                <% end %>
+              <% else %>
+                <span style="color: #64748b; font-size: 12px;">No action needed</span>
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <div class="empty-state" style="padding: 40px; text-align: center;">
+    <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+    <h2 class="empty-title">No <%= @request_type.titleize %> Requests</h2>
+    <p class="empty-message">No <%= @request_type %> requests to approve at this time.</p>
+  </div>
+<% end %>

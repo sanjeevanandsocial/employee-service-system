@@ -59,6 +59,17 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <%= f.label :reporting_person_id, "Reporting Person", class: "form-label" %>
+            <%= f.select :reporting_person_id, User.where.not(id: @employee.id).map { |u| [u.email, u.id] }, { prompt: "Select reporting person" }, class: "form-input" %>
+          </div>
+        </div>
+        <div class="form-col">
+        </div>
+      </div>
+
       <h3 class="section-title">Address Information</h3>
 
       <%= f.fields_for :addresses do |addr| %>

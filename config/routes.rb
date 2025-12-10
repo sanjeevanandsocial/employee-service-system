@@ -5,26 +5,49 @@ Rails.application.routes.draw do
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
 
-  # Employee routes (admin + non-admin)
-  resources :employees, only: [:index] do
+  # Employee routes
+  resources :employees do
     member do
       get :attendance
     end
   end
 
-  # Admin-only routes
-  authenticate :user, ->(u) { u.admin? } do
-    resources :employees, except: [:index]
+  resources :tasks, only: [:index]
+  resources :task_filters, only: [:create, :destroy]
+  resources :holidays, only: [:index, :create, :destroy]
+  
+  get "access_control", to: "access_control#index", as: :access_control
+  post "access_control/search", to: "access_control#search"
+  patch "access_control/update_permissions", to: "access_control#update_permissions"
+  
+  resources :od_requests, only: [:index, :create] do
+    member do
+      patch :cancel
+    end
+  end
+  resources :leave_requests, only: [:index, :create] do
+    member do
+      patch :cancel
+    end
+  end
+  
+  resources :approve_requests, only: [:index] do
+    member do
+      patch :update_od_status
+      patch :update_leave_status
+    end
   end
 
   resources :projects do
     member do
       get :details
     end
+    resources :project_employees, only: [:create, :destroy]
+    resources :tasks, only: [:new, :create, :edit, :update, :destroy]
   end
 
   # Root route
-  root "employees#index"
+  root "dashboard#index"
 
   # Health + PWA routes
   get "up" => "rails/health#show", as: :rails_health_check

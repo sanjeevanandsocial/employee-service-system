@@ -1,0 +1,468 @@
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<div class="page-header">
+  <h1 class="page-title">Tasks</h1>
+  <div style="display: flex; gap: 10px;">
+    <button type="button" onclick="toggleFilter()" class="toggle-filter-btn" id="toggleBtn">
+      <i class="fas fa-filter"></i> Show Filters
+    </button>
+    <% if params[:id].present? || params[:title].present? || params[:project_id].present? || params[:priority].present? || params[:status].present? || params[:assigned_to_id].present? || params[:category].present? || params[:due_date].present? %>
+      <button type="button" onclick="openBookmarkModal()" class="toggle-filter-btn" style="background: #667eea; color: white;">
+        <i class="fas fa-bookmark"></i> Bookmark Filter
+      </button>
+    <% end %>
+    <% if current_user.has_permission?('task_create') %>
+    <button type="button" onclick="openAddTaskModal()" class="add-btn">
+      <i class="fas fa-plus"></i> Add Task
+    </button>
+    <% end %>
+  </div>
+</div>
+
+<div style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+  <div style="font-weight: 600; color: #64748b; font-size: 13px; margin-bottom: 10px;">BOOKMARKED FILTERS</div>
+  <% if @task_filters.any? %>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <% @task_filters.each do |filter| %>
+        <div style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+          <%= link_to tasks_path(filter_id: filter.id), style: "text-decoration: none; color: #667eea; font-size: 14px; display: flex; align-items: center; gap: 5px;" do %>
+            <i class="fas fa-bookmark"></i> <%= filter.name %>
+          <% end %>
+          <%= button_to task_filter_path(filter), method: :delete, style: "background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; margin-left: 5px;", data: { confirm: "Delete this bookmark?" } do %>
+            <i class="fas fa-times"></i>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div style="color: #64748b; font-size: 14px; font-style: italic;">
+      No bookmarked filters yet. Apply filters below and click "Bookmark Filter" to save them.
+    </div>
+  <% end %>
+</div>
+
+<div class="filter-section" id="filterSection" style="display: <%= @has_filters ? 'block' : 'none' %>;">
+  <%= form_with url: tasks_path, method: :get, class: "filter-form" do |f| %>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <div style="display: flex; gap: 10px; flex: 1; flex-wrap: wrap;">
+        <%= f.number_field :id, value: params[:id], placeholder: "Search by ID", class: "filter-input", style: "flex: 1; min-width: 150px;" %>
+        <%= f.text_field :title, value: params[:title], placeholder: "Search by title", class: "filter-input", style: "flex: 1; min-width: 150px;" %>
+        <%= f.select :project_id, Project.all.map { |p| [p.title, p.id] }, { include_blank: "All Projects", selected: params[:project_id] }, { class: "filter-input", style: "flex: 1; min-width: 150px;" } %>
+        <%= f.select :priority, Task.priorities.keys.map { |p| [p.titleize, p] }, { include_blank: "All Priorities", selected: params[:priority] }, { class: "filter-input", style: "flex: 1; min-width: 150px;" } %>
+        <%= f.select :status, Task.statuses.keys.map { |s| [s.gsub('_', ' ').titleize, s] }, { include_blank: "All Status", selected: params[:status] }, { class: "filter-input", style: "flex: 1; min-width: 150px;" } %>
+        <%= f.select :assigned_to_id, User.where(role: :employee).map { |u| [u.email, u.id] }, { include_blank: "All Employees", selected: params[:assigned_to_id] }, { class: "filter-input", style: "flex: 1; min-width: 150px;" } %>
+        <%= f.select :category, Task.categories.keys.map { |c| [c.gsub('_', ' ').titleize, c] }, { include_blank: "All Categories", selected: params[:category] }, { class: "filter-input", style: "flex: 1; min-width: 150px;" } %>
+        <%= f.date_field :due_date, value: params[:due_date], class: "filter-input", style: "flex: 1; min-width: 150px;" %>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <%= f.button type: :submit, class: "filter-btn" do %>
+          <i class="fas fa-search"></i> Search
+        <% end %>
+        <%= link_to tasks_path, class: "clear-btn" do %>
+          <i class="fas fa-times"></i> Clear
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div id="bookmarkModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);" onclick="closeBookmarkModal(event)">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; margin: 100px auto;" onclick="event.stopPropagation()">
+    <h3 style="margin: 0 0 20px 0;">Bookmark This Filter</h3>
+    <%= form_with model: TaskFilter.new, url: task_filters_path, method: :post do |f| %>
+      <%= f.hidden_field :filter_params, value: params.slice(:id, :title, :project_id, :priority, :status, :assigned_to_id, :category, :due_date).to_json %>
+      <div style="margin-bottom: 15px;">
+        <%= f.label :name, "Filter Name", style: "display: block; margin-bottom: 5px; font-weight: 500;" %>
+        <%= f.text_field :name, placeholder: "e.g., High Priority Tasks", style: "width: 100%; padding: 8px; border: 1px solid #e1e5e9; border-radius: 6px;" %>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="closeBookmarkModal()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+        <%= f.submit "Save Bookmark", style: "padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function toggleFilter() {
+    const filterSection = document.getElementById('filterSection');
+    const toggleBtn = document.getElementById('toggleBtn');
+    if (filterSection.style.display === 'none') {
+      filterSection.style.display = 'block';
+      toggleBtn.innerHTML = '<i class="fas fa-filter"></i> Hide Filters';
+    } else {
+      filterSection.style.display = 'none';
+      toggleBtn.innerHTML = '<i class="fas fa-filter"></i> Show Filters';
+    }
+  }
+  
+  function openBookmarkModal() {
+    document.getElementById('bookmarkModal').style.display = 'flex';
+  }
+  
+  function closeBookmarkModal(event) {
+    if (!event || event.target.id === 'bookmarkModal') {
+      document.getElementById('bookmarkModal').style.display = 'none';
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const hasBookmarks = <%= @task_filters.any? %>;
+    const hasFilters = <%= @has_filters %>;
+    if (!hasBookmarks || hasFilters) {
+      document.getElementById('filterSection').style.display = 'block';
+      document.getElementById('toggleBtn').innerHTML = '<i class="fas fa-filter"></i> Hide Filters';
+    }
+  });
+  
+  function openAddTaskModal() {
+    document.getElementById('addTaskModal').style.display = 'flex';
+    if (window.taskQuill) window.taskQuill.setText('');
+  }
+  
+  function closeAddTaskModal(event) {
+    if (!event || event.target.id === 'addTaskModal') {
+      document.getElementById('addTaskModal').style.display = 'none';
+    }
+  }
+  
+  function openTaskDetailsModal(taskId) {
+    document.getElementById('taskDetailsModal' + taskId).style.display = 'flex';
+  }
+  
+  function closeTaskDetailsModal(taskId, event) {
+    if (!event || event.target.id === 'taskDetailsModal' + taskId) {
+      document.getElementById('taskDetailsModal' + taskId).style.display = 'none';
+    }
+  }
+  
+  function openTaskCommentsModal(taskId) {
+    document.getElementById('taskCommentsModal' + taskId).style.display = 'flex';
+  }
+  
+  function closeTaskCommentsModal(taskId, event) {
+    if (!event || event.target.id === 'taskCommentsModal' + taskId) {
+      document.getElementById('taskCommentsModal' + taskId).style.display = 'none';
+    }
+  }
+  
+  function openEditTaskModal(taskId) {
+    document.getElementById('editTaskModal' + taskId).style.display = 'flex';
+    if (window['editTaskQuill' + taskId]) {
+      window['editTaskQuill' + taskId].root.innerHTML = document.getElementById('task_description_content_' + taskId).value;
+    }
+  }
+  
+  function closeEditTaskModal(taskId, event) {
+    if (!event || event.target.id === 'editTaskModal' + taskId) {
+      document.getElementById('editTaskModal' + taskId).style.display = 'none';
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('task-quill-editor')) {
+      window.taskQuill = new Quill('#task-quill-editor', {
+        theme: 'snow',
+        placeholder: 'Enter task description...',
+        modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
+      });
+      window.taskQuill.on('text-change', function() {
+        document.getElementById('task_description_field').value = window.taskQuill.root.innerHTML;
+      });
+    }
+    
+    document.querySelectorAll('[id^="edit-task-quill-editor-"]').forEach(function(editor) {
+      const taskId = editor.id.replace('edit-task-quill-editor-', '');
+      window['editTaskQuill' + taskId] = new Quill('#' + editor.id, {
+        theme: 'snow',
+        placeholder: 'Enter task description...',
+        modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
+      });
+      window['editTaskQuill' + taskId].on('text-change', function() {
+        document.getElementById('edit_task_description_field_' + taskId).value = window['editTaskQuill' + taskId].root.innerHTML;
+      });
+    });
+  });
+</script>
+
+<div id="addTaskModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;" onclick="closeAddTaskModal(event)">
+  <div style="background: white; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 2px solid #e2e8f0;">
+      <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0;">Create New Task</h2>
+      <button onclick="closeAddTaskModal()" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 30px; height: 30px;">&times;</button>
+    </div>
+    <%= form_with url: "", method: :post, local: true, id: "new_task_form" do |f| %>
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+      <%= hidden_field_tag :from_tasks_index, true %>
+      <div style="padding: 30px; overflow-y: auto; max-height: calc(90vh - 140px);">
+        <div class="form-group">
+          <%= label_tag :project_id, "Project", class: "form-label" %>
+          <%= select_tag :project_id, options_from_collection_for_select(@projects, :id, :title, nil), { prompt: "Select project", class: "form-select", onchange: "updateFormAction(this.value)" } %>
+        </div>
+        <div class="form-group">
+          <%= label_tag 'task[title]', "Task Title", class: "form-label" %>
+          <%= text_field_tag 'task[title]', nil, class: "form-input", placeholder: "Enter task title" %>
+        </div>
+        <div class="form-group">
+          <%= label_tag 'task[description]', "Description", class: "form-label" %>
+          <div id="task-quill-editor" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; min-height: 150px;"></div>
+          <%= hidden_field_tag 'task[description]', nil, id: "task_description_field" %>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <%= label_tag 'task[priority]', "Priority", class: "form-label" %>
+            <%= select_tag 'task[priority]', options_for_select(Task.priorities.keys.map { |k| [k.titleize, k] }), class: "form-select" %>
+          </div>
+          <div class="form-group">
+            <%= label_tag 'task[due_date]', "Due Date", class: "form-label" %>
+            <%= date_field_tag 'task[due_date]', nil, class: "form-input" %>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <%= label_tag 'task[status]', "Status", class: "form-label" %>
+            <%= select_tag 'task[status]', options_for_select(Task.statuses.keys.map { |k| [k.gsub('_', ' ').titleize, k] }), class: "form-select" %>
+          </div>
+          <div class="form-group">
+            <%= label_tag 'task[assigned_to_id]', "Assigned To", class: "form-label" %>
+            <%= select_tag 'task[assigned_to_id]', options_from_collection_for_select(User.where(role: :employee), :id, :email, nil), { prompt: "Select employee", class: "form-select" } %>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <%= label_tag 'task[category]', "Category", class: "form-label" %>
+            <%= select_tag 'task[category]', options_for_select(Task.categories.keys.map { |k| [k.gsub('_', ' ').titleize, k] }), class: "form-select" %>
+          </div>
+          <div class="form-group">
+            <%= label_tag 'task[estimated_time]', "Estimated Time", class: "form-label" %>
+            <%= text_field_tag 'task[estimated_time]', nil, class: "form-input", placeholder: "e.g., 5 hours, 2 days" %>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 20px 30px; border-top: 2px solid #e2e8f0; background: #f8fafc;">
+        <div class="btn-group" style="margin: 0;">
+          <%= submit_tag "Create Task", class: "btn-primary" %>
+          <button type="button" onclick="closeAddTaskModal()" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function updateFormAction(projectId) {
+    if (projectId) {
+      document.getElementById('new_task_form').action = '/projects/' + projectId + '/tasks';
+    }
+  }
+</script>
+
+<% @tasks.each do |task| %>
+  <div id="editTaskModal<%= task.id %>" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;" onclick="closeEditTaskModal(<%= task.id %>, event)">
+    <div style="background: white; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 2px solid #e2e8f0;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0;">Edit Task</h2>
+        <button onclick="closeEditTaskModal(<%= task.id %>)" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 30px; height: 30px;">&times;</button>
+      </div>
+      <%= form_with model: task, url: project_task_path(task.project, task), method: :patch, local: true do |f| %>
+        <%= hidden_field_tag :from_tasks_index, true %>
+        <%= hidden_field_tag :task_description_content, task.description, id: "task_description_content_#{task.id}" %>
+        <div style="padding: 30px; overflow-y: auto; max-height: calc(90vh - 140px);">
+          <div class="form-group">
+            <%= f.label :title, "Task Title", class: "form-label" %>
+            <%= f.text_field :title, class: "form-input", placeholder: "Enter task title" %>
+          </div>
+          <div class="form-group">
+            <%= f.label :description, "Description", class: "form-label" %>
+            <div id="edit-task-quill-editor-<%= task.id %>" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; min-height: 150px;"></div>
+            <%= f.hidden_field :description, id: "edit_task_description_field_#{task.id}" %>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <%= f.label :priority, "Priority", class: "form-label" %>
+              <%= f.select :priority, Task.priorities.keys.map { |k| [k.titleize, k] }, {}, class: "form-select" %>
+            </div>
+            <div class="form-group">
+              <%= f.label :due_date, "Due Date", class: "form-label" %>
+              <%= f.date_field :due_date, class: "form-input" %>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <%= f.label :status, "Status", class: "form-label" %>
+              <%= f.select :status, Task.statuses.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+            </div>
+            <div class="form-group">
+              <%= f.label :assigned_to_id, "Assigned To", class: "form-label" %>
+              <%= f.select :assigned_to_id, User.where(role: :employee).map { |u| [u.email, u.id] }, { prompt: "Select employee" }, class: "form-select" %>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <%= f.label :category, "Category", class: "form-label" %>
+              <%= f.select :category, Task.categories.keys.map { |k| [k.gsub('_', ' ').titleize, k] }, {}, class: "form-select" %>
+            </div>
+            <div class="form-group">
+              <%= f.label :estimated_time, "Estimated Time", class: "form-label" %>
+              <%= f.text_field :estimated_time, class: "form-input", placeholder: "e.g., 5 hours, 2 days" %>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 20px 30px; border-top: 2px solid #e2e8f0; background: #f8fafc;">
+          <div class="btn-group" style="margin: 0;">
+            <%= f.submit "Update Task", class: "btn-primary" %>
+            <button type="button" onclick="closeEditTaskModal(<%= task.id %>)" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div id="taskDetailsModal<%= task.id %>" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;" onclick="closeTaskDetailsModal(<%= task.id %>, event)">
+    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0;">Task Details</h2>
+        <button onclick="closeTaskDetailsModal(<%= task.id %>)" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 30px; height: 30px;">&times;</button>
+      </div>
+      <div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Task ID:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;">#<%= task.id %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Title:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.title %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Description:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.description.present? ? task.description.html_safe : '--' %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Project:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.project.title %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Priority:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.priority.titleize %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Status:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.status.gsub('_', ' ').titleize %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Assigned To:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.assigned_to&.email || '--' %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Category:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.category.gsub('_', ' ').titleize %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Due Date:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= format_display_date(task.due_date) %></div>
+        </div>
+        <div style="display: flex; padding: 12px 0;">
+          <div style="font-weight: 600; color: #64748b; width: 140px; font-size: 14px;">Estimated Time:</div>
+          <div style="color: #1e293b; font-size: 14px; flex: 1;"><%= task.estimated_time || '--' %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="taskCommentsModal<%= task.id %>" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;" onclick="closeTaskCommentsModal(<%= task.id %>, event)">
+    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0;">Comments & Activity Log</h2>
+        <button onclick="closeTaskCommentsModal(<%= task.id %>)" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 30px; height: 30px;">&times;</button>
+      </div>
+      <%= form_with url: project_task_path(task.project, task), method: :patch, local: true, style: "margin-bottom: 20px;" do |f| %>
+        <%= f.text_area :comment, placeholder: "Add a comment...", style: "width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; resize: vertical; min-height: 60px;", rows: 3 %>
+        <%= f.submit "Add Comment", style: "margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;" %>
+      <% end %>
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 15px;">
+        <% if task.task_activities.any? %>
+          <% task.task_activities.order(created_at: :desc).each do |activity| %>
+            <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+              <div style="font-weight: 600; color: #1e293b; font-size: 13px;"><%= activity.user.email %></div>
+              <div style="color: #94a3b8; font-size: 12px; margin: 2px 0 5px 0;">(<%= activity.created_at.strftime('%-d %b %Y') %>)</div>
+              <div style="color: #64748b; font-size: 13px;"><%= activity.comment %></div>
+            </div>
+          <% end %>
+        <% else %>
+          <p style="margin: 0; color: #94a3b8; font-size: 13px;">No activity yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @has_filters %>
+  <div class="total-records">
+    Total Records: <%= @tasks.total_count %>
+  </div>
+<% end %>
+
+<% if @tasks.any? %>
+  <table class="employees-table">
+    <thead>
+      <tr>
+        <th style="width: 80px;">#Task ID</th>
+        <th style="width: 40%;">Title</th>
+        <th>Priority</th>
+        <th>Assigned To</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @tasks.each do |task| %>
+        <tr>
+          <td><%= task.id %></td>
+          <td><%= task.title %></td>
+          <td><%= task.priority.titleize %></td>
+          <td><%= task.assigned_to&.email || '--' %></td>
+          <td>
+            <div style="display: flex; justify-content: flex-end; gap: 5px;">
+              <button onclick="openEditTaskModal(<%= task.id %>)" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button onclick="openTaskDetailsModal(<%= task.id %>)" style="background: #10b981; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fas fa-info-circle"></i> Details
+              </button>
+              <button onclick="openTaskCommentsModal(<%= task.id %>)" style="background: #6878e1; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fas fa-comments"></i> Comments
+              </button>
+              <% if current_user.has_permission?('task_delete') %>
+              <%= button_to project_task_path(task.project, task), method: :delete, onclick: "return confirm('Are you sure you want to delete this task?');", style: "background: #ef4444; color: white; border: none; padding: 6px 12px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; margin: 0;" do %>
+                <i class="fas fa-trash"></i> Delete
+              <% end %>
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  
+  <div class="table-footer">
+    <%= link_to tasks_path(format: :csv, id: params[:id], title: params[:title], project_id: params[:project_id], priority: params[:priority], status: params[:status], assigned_to_id: params[:assigned_to_id], category: params[:category], due_date: params[:due_date]), class: "export-csv-btn" do %>
+      <i class="fas fa-download"></i> Export as CSV
+    <% end %>
+    <div class="pagination-container">
+      <%= paginate @tasks %>
+    </div>
+  </div>
+<% else %>
+  <div class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-tasks"></i>
+    </div>
+    <% if @has_filters %>
+      <h2 class="empty-title">No Tasks Found</h2>
+      <p class="empty-message">No tasks match your filter criteria.</p>
+    <% else %>
+      <h2 class="empty-title">Search for Tasks</h2>
+      <p class="empty-message">Use filters above to search for tasks.</p>
+    <% end %>
+  </div>
+<% end %>

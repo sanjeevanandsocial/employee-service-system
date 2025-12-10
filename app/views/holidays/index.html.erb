@@ -1,0 +1,90 @@
+<div class="page-header">
+  <h1 class="page-title">Holidays <%= Date.current.year %></h1>
+  <div style="display: flex; gap: 10px;">
+    <% if current_user.has_permission?('holiday_manage') %>
+    <button type="button" onclick="openHolidayModal()" class="add-btn">
+      <i class="fas fa-plus"></i> Add Holiday
+    </button>
+    <% end %>
+  </div>
+</div>
+
+<div id="holidayModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center;" onclick="closeHolidayModal(event)">
+  <div style="background: white; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 2px solid #e2e8f0;">
+      <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin: 0;">Add Holiday</h2>
+      <button onclick="closeHolidayModal()" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer; padding: 0; width: 30px; height: 30px;">&times;</button>
+    </div>
+    <%= form_with model: @holiday, url: holidays_path, local: true do |f| %>
+      <div style="padding: 30px;">
+        <% if @holiday.errors.any? %>
+          <div style="background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 20px;">
+            <h4 style="color: #991b1b; margin: 0 0 8px 0; font-size: 14px;">Please fix the following errors:</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: 13px;">
+              <% @holiday.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+        <div class="form-group">
+          <%= f.label :name, "Holiday Name *", class: "form-label" %>
+          <%= f.text_field :name, class: "form-input", placeholder: "Enter holiday name", required: true %>
+        </div>
+        <div class="form-group">
+          <%= f.label :date, "Date *", class: "form-label" %>
+          <%= f.date_field :date, class: "form-input", min: Date.current.beginning_of_year.strftime('%Y-%m-%d'), max: Date.current.end_of_year.strftime('%Y-%m-%d'), required: true %>
+        </div>
+
+      </div>
+      <div style="padding: 20px 30px; border-top: 2px solid #e2e8f0; background: #f8fafc;">
+        <div class="btn-group" style="margin: 0;">
+          <%= f.submit "Add Holiday", class: "btn-primary" %>
+          <button type="button" onclick="closeHolidayModal()" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function openHolidayModal() {
+    document.getElementById('holidayModal').style.display = 'flex';
+  }
+  
+  function closeHolidayModal(event) {
+    if (!event || event.target.id === 'holidayModal') {
+      document.getElementById('holidayModal').style.display = 'none';
+    }
+  }
+  
+  <% if @show_modal %>
+    document.addEventListener('DOMContentLoaded', function() {
+      openHolidayModal();
+    });
+  <% end %>
+</script>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+  <% (1..12).each do |month| %>
+    <% month_date = Date.new(Date.current.year, month, 1) %>
+    <% month_holidays = @holidays.select { |h| h.date.month == month } %>
+    <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 style="margin: 0 0 15px 0; color: #1e293b; font-size: 18px; text-align: center;"><%= month_date.strftime('%B') %></h3>
+      <% if month_holidays.any? %>
+        <% month_holidays.each do |holiday| %>
+          <div style="margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 6px; border-left: 4px solid #667eea; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: 600; color: #1e293b; font-size: 14px;"><%= holiday.date.day %> - <%= holiday.name %></div>
+            <% if current_user.has_permission?('holiday_manage') %>
+            <%= button_to holiday_path(holiday), method: :delete, style: "background: none; border: none; color: #ef4444; cursor: pointer; padding: 2px;", data: { confirm: 'Are you sure you want to delete this holiday?' } do %>
+              <i class="fas fa-times" style="font-size: 12px;"></i>
+            <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div style="text-align: center; color: #64748b; font-size: 14px; padding: 20px;">No holidays</div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

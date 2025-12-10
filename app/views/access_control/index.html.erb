@@ -1,0 +1,462 @@
+<style>
+  
+  .employee-info {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border-left: 4px solid #667eea;
+  }
+  
+  .employee-info h3 {
+    margin: 0 0 8px 0;
+    color: #1e293b;
+    font-size: 18px;
+  }
+  
+  .employee-info p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+  }
+  
+  .permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .permission-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .permission-header {
+    background: #667eea;
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .permission-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .permission-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  
+  .permission-list {
+    padding: 16px;
+  }
+  
+  .permission-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  
+  .permission-item:last-child {
+    border-bottom: none;
+  }
+  
+  .permission-name {
+    color: #374151;
+    font-size: 14px;
+  }
+  
+  .permission-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .status-allowed {
+    color: #059669;
+  }
+  
+  .status-denied {
+    color: #dc2626;
+  }
+  
+  .no-employee {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+  }
+  
+  .no-employee i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+</style>
+
+<h1 class="page-title">Access Control Management</h1>
+
+<div class="filter-section">
+  <div class="filter-form">
+    <input type="text" id="employeeId" placeholder="Search by ID" class="filter-input">
+    <input type="text" id="employeeEmail" placeholder="Search by email" class="filter-input">
+    <button type="button" onclick="searchEmployee()" class="filter-btn">
+      <i class="fas fa-search"></i> Search
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <div id="employeeNotFound" class="no-employee" style="display: none;">
+    <i class="fas fa-user-slash"></i>
+    <h3>Employee Not Found</h3>
+    <p>Please check the employee ID or email and try again.</p>
+  </div>
+  
+  <div id="noSearch" class="no-employee">
+    <i class="fas fa-search"></i>
+    <h3>Search for an Employee</h3>
+    <p>Enter an employee ID or email above to view their access control permissions.</p>
+  </div>
+  
+  <div id="employeePermissions" style="display: none;">
+    <div class="employee-info">
+      <h3 id="employeeName">John Doe</h3>
+      <p><strong>ID:</strong> <span id="displayEmployeeId">123</span> | <strong>Email:</strong> <span id="displayEmployeeEmail">john@example.com</span> | <strong>Role:</strong> <span id="displayEmployeeRole">Employee</span></p>
+    </div>
+    
+    <div style="margin-bottom: 20px; text-align: right;">
+      <button class="add-btn" style="border:0;cursor: pointer;" onclick="savePermissions()">
+        <i class="fas fa-save"></i> Save Permissions
+      </button>
+    </div>
+    
+    <div class="permissions-grid">
+      <div class="permission-card">
+        <div class="permission-header">
+          <div class="permission-header-left">
+            <i class="fas fa-users"></i>
+            Employees Menu
+          </div>
+          <input type="checkbox" class="permission-checkbox" id="employees-menu" onchange="toggleMenuPermissions('employees')">
+        </div>
+        <div class="permission-list">
+          <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #3b82f6;">
+            <div style="font-weight: 600; color: #1e293b; margin-bottom: 8px; font-size: 13px;">Employee View Access (OR condition)</div>
+            <div class="permission-item" style="border-bottom: none; padding: 4px 0;">
+              <span class="permission-name">Can see all employees</span>
+              <input type="radio" name="employee-view" value="all" class="permission-checkbox employees-perm" checked onchange="updateMenuCheckbox('employees')">
+            </div>
+            <div class="permission-item" style="border-bottom: none; padding: 4px 0;">
+              <span class="permission-name">Can see assigned employees</span>
+              <input type="radio" name="employee-view" value="assigned" class="permission-checkbox employees-perm" onchange="updateMenuCheckbox('employees')">
+            </div>
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can create new employee</span>
+            <input type="checkbox" class="permission-checkbox employees-perm" data-permission="employee_create" onchange="updateMenuCheckbox('employees')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can edit existing employee</span>
+            <input type="checkbox" class="permission-checkbox employees-perm" data-permission="employee_edit" onchange="updateMenuCheckbox('employees')">
+          </div>
+        </div>
+      </div>
+      
+      <div class="permission-card">
+        <div class="permission-header">
+          <div class="permission-header-left">
+            <i class="fa-solid fa-diagram-project"></i>
+            Projects Menu
+          </div>
+          <input type="checkbox" class="permission-checkbox" id="projects-menu" onchange="toggleMenuPermissions('projects')">
+        </div>
+        <div class="permission-list">
+          <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #3b82f6;">
+            <div style="font-weight: 600; color: #1e293b; margin-bottom: 8px; font-size: 13px;">Project View Access (OR condition)</div>
+            <div class="permission-item" style="border-bottom: none; padding: 4px 0;">
+              <span class="permission-name">Can see all projects</span>
+              <input type="radio" name="project-view" value="all" class="permission-checkbox projects-perm" checked onchange="updateMenuCheckbox('projects')">
+            </div>
+            <div class="permission-item" style="border-bottom: none; padding: 4px 0;">
+              <span class="permission-name">Can see assigned projects</span>
+              <input type="radio" name="project-view" value="assigned" class="permission-checkbox projects-perm" onchange="updateMenuCheckbox('projects')">
+            </div>
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can create new project</span>
+            <input type="checkbox" class="permission-checkbox projects-perm" data-permission="project_create" onchange="updateMenuCheckbox('projects')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can modify the project</span>
+            <input type="checkbox" class="permission-checkbox projects-perm" data-permission="project_modify" onchange="updateMenuCheckbox('projects')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can modify project employees</span>
+            <input type="checkbox" class="permission-checkbox projects-perm" data-permission="project_modify_employees" onchange="updateMenuCheckbox('projects')">
+          </div>
+        </div>
+      </div>
+      
+      <div class="permission-card">
+        <div class="permission-header">
+          <div class="permission-header-left">
+            <i class="fas fa-tasks"></i>
+            Tasks Menu
+          </div>
+          <input type="checkbox" class="permission-checkbox" id="tasks-menu" data-permission="tasks_menu" onchange="toggleMenuPermissions('tasks')">
+        </div>
+        <div class="permission-list">
+          <div class="permission-item">
+            <span class="permission-name">Can search tasks</span>
+            <input type="checkbox" class="permission-checkbox tasks-perm" data-permission="task_search" checked onchange="updateMenuCheckbox('tasks')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can add new tasks</span>
+            <input type="checkbox" class="permission-checkbox tasks-perm" data-permission="task_create" checked onchange="updateMenuCheckbox('tasks')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can delete a task</span>
+            <input type="checkbox" class="permission-checkbox tasks-perm" data-permission="task_delete" onchange="updateMenuCheckbox('tasks')">
+          </div>
+        </div>
+      </div>
+      
+      <div class="permission-card">
+        <div class="permission-header">
+          <div class="permission-header-left">
+            <i class="fas fa-calendar-alt"></i>
+            Holidays Menu
+          </div>
+          <input type="checkbox" class="permission-checkbox" id="holidays-menu" onchange="toggleMenuPermissions('holidays')">
+        </div>
+        <div class="permission-list">
+          <div class="permission-item">
+            <span class="permission-name">Can view holidays</span>
+            <input type="checkbox" class="permission-checkbox holidays-perm" data-permission="holiday_view" checked onchange="updateMenuCheckbox('holidays')">
+          </div>
+          <div class="permission-item">
+            <span class="permission-name">Can add/delete holidays</span>
+            <input type="checkbox" class="permission-checkbox holidays-perm" data-permission="holiday_manage" onchange="updateMenuCheckbox('holidays')">
+          </div>
+        </div>
+      </div>
+      
+      <div class="permission-card">
+        <div class="permission-header">
+          <div class="permission-header-left">
+            <i class="fas fa-check-circle"></i>
+            Approve Requests
+          </div>
+          <input type="checkbox" class="permission-checkbox" id="approve-menu" onchange="toggleMenuPermissions('approve')">
+        </div>
+        <div class="permission-list">
+          <div class="permission-item">
+            <span class="permission-name">Can approve OD / Leave</span>
+            <input type="checkbox" class="permission-checkbox approve-perm" data-permission="request_approve" checked onchange="updateMenuCheckbox('approve')">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleMenuPermissions(menuType) {
+  const menuCheckbox = document.getElementById(menuType + '-menu');
+  const permissionCheckboxes = document.querySelectorAll('.' + menuType + '-perm');
+  
+  if (menuType === 'employees') {
+    const radioButtons = document.querySelectorAll('input[name="employee-view"]');
+    const regularCheckboxes = document.querySelectorAll('.employees-perm:not([name="employee-view"])');
+    
+    if (menuCheckbox.checked) {
+      if (radioButtons.length > 0) radioButtons[0].checked = true;
+      regularCheckboxes.forEach(checkbox => checkbox.checked = true);
+    } else {
+      radioButtons.forEach(radio => radio.checked = false);
+      regularCheckboxes.forEach(checkbox => checkbox.checked = false);
+    }
+  } else if (menuType === 'projects') {
+    const radioButtons = document.querySelectorAll('input[name="project-view"]');
+    const regularCheckboxes = document.querySelectorAll('.projects-perm:not([name="project-view"])');
+    
+    if (menuCheckbox.checked) {
+      if (radioButtons.length > 0) radioButtons[0].checked = true;
+      regularCheckboxes.forEach(checkbox => checkbox.checked = true);
+    } else {
+      radioButtons.forEach(radio => radio.checked = false);
+      regularCheckboxes.forEach(checkbox => checkbox.checked = false);
+    }
+  } else {
+    permissionCheckboxes.forEach(checkbox => {
+      checkbox.checked = menuCheckbox.checked;
+    });
+  }
+}
+
+function updateMenuCheckbox(menuType) {
+  const menuCheckbox = document.getElementById(menuType + '-menu');
+  
+  if (menuType === 'employees') {
+    const radioButtons = document.querySelectorAll('input[name="employee-view"]:checked');
+    const regularCheckboxes = document.querySelectorAll('.employees-perm:not([name="employee-view"]):checked');
+    const totalChecked = radioButtons.length + regularCheckboxes.length;
+    
+    menuCheckbox.checked = totalChecked > 0;
+  } else if (menuType === 'projects') {
+    const radioButtons = document.querySelectorAll('input[name="project-view"]:checked');
+    const regularCheckboxes = document.querySelectorAll('.projects-perm:not([name="project-view"]):checked');
+    const totalChecked = radioButtons.length + regularCheckboxes.length;
+    
+    menuCheckbox.checked = totalChecked > 0;
+  } else {
+    const checkedCount = document.querySelectorAll('.' + menuType + '-perm:checked').length;
+    menuCheckbox.checked = checkedCount > 0;
+  }
+}
+
+let currentEmployeeId = null;
+
+function searchEmployee() {
+  const employeeId = document.getElementById('employeeId').value.trim();
+  const employeeEmail = document.getElementById('employeeEmail').value.trim();
+  
+  if (!employeeId && !employeeEmail) {
+    alert('Please enter either Employee ID or Email');
+    return;
+  }
+  
+  // Hide all sections first
+  document.getElementById('noSearch').style.display = 'none';
+  document.getElementById('employeeNotFound').style.display = 'none';
+  document.getElementById('employeePermissions').style.display = 'none';
+  
+  fetch('/access_control/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      employee_id: employeeId,
+      employee_email: employeeEmail
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.found) {
+      currentEmployeeId = data.employee.id;
+      document.getElementById('displayEmployeeId').textContent = data.employee.id;
+      document.getElementById('displayEmployeeEmail').textContent = data.employee.email;
+      document.getElementById('employeeName').textContent = data.employee.email.split('@')[0];
+      document.getElementById('displayEmployeeRole').textContent = data.employee.role.charAt(0).toUpperCase() + data.employee.role.slice(1);
+      
+      loadPermissions(data.permissions);
+      document.getElementById('employeePermissions').style.display = 'block';
+    } else {
+      document.getElementById('employeeNotFound').style.display = 'block';
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error searching for employee');
+  });
+}
+
+function loadPermissions(permissions) {
+  // Reset all checkboxes
+  document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+  
+  // Set permissions based on data
+  Object.keys(permissions).forEach(key => {
+    const value = permissions[key];
+    if (key === 'employee_view') {
+      document.querySelector(`input[name="employee-view"][value="${value}"]`)?.click();
+    } else if (key === 'project_view') {
+      document.querySelector(`input[name="project-view"][value="${value}"]`)?.click();
+    } else {
+      const checkbox = document.querySelector(`input[data-permission="${key}"]`);
+      if (checkbox) checkbox.checked = value === 'true';
+    }
+  });
+  
+  initializeMenuCheckboxes();
+}
+
+function savePermissions() {
+  if (!currentEmployeeId) {
+    alert('Please search for an employee first');
+    return;
+  }
+  
+  const permissions = {};
+  
+  // Get radio button values
+  const employeeView = document.querySelector('input[name="employee-view"]:checked');
+  if (employeeView) permissions['employee_view'] = employeeView.value;
+  
+  const projectView = document.querySelector('input[name="project-view"]:checked');
+  if (projectView) permissions['project_view'] = projectView.value;
+  
+  // Get checkbox values
+  document.querySelectorAll('.permission-checkbox[data-permission]').forEach(cb => {
+    permissions[cb.dataset.permission] = cb.checked.toString();
+  });
+  
+  fetch('/access_control/update_permissions', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    },
+    body: JSON.stringify({
+      employee_id: currentEmployeeId,
+      permissions: permissions
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Permissions saved successfully!');
+    } else {
+      alert('Error saving permissions: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error saving permissions');
+  });
+}
+
+function initializeMenuCheckboxes() {
+  const menuTypes = ['employees', 'projects', 'tasks', 'holidays', 'approve'];
+  menuTypes.forEach(menuType => {
+    updateMenuCheckbox(menuType);
+  });
+}
+
+// Allow Enter key to trigger search
+document.addEventListener('DOMContentLoaded', function() {
+  initializeMenuCheckboxes();
+  
+  document.getElementById('employeeId').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') searchEmployee();
+  });
+
+  document.getElementById('employeeEmail').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') searchEmployee();
+  });
+});
+</script>
