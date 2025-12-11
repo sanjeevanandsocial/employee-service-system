@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :leave_requests, dependent: :destroy
   has_many :user_permissions, dependent: :destroy
   belongs_to :reporting_person, class_name: 'User', optional: true
+  has_one_attached :profile_picture
 
   accepts_nested_attributes_for :addresses, allow_destroy: true
 

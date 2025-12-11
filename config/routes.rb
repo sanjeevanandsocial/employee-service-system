@@ -4,6 +4,9 @@ Rails.application.routes.draw do
 
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
+  get "profile", to: "profile#show", as: :profile
+  get "settings/change_profile_picture", to: "settings#change_profile_picture", as: :change_profile_picture
+  patch "settings/update_profile_picture", to: "settings#update_profile_picture"
 
   # Employee routes
   resources :employees do
