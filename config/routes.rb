@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   get "profile", to: "profile#show", as: :profile
   get "settings/change_profile_picture", to: "settings#change_profile_picture", as: :change_profile_picture
   patch "settings/update_profile_picture", to: "settings#update_profile_picture"
+  get "settings/change_password", to: "settings#change_password", as: :change_password
+  patch "settings/update_password", to: "settings#update_password"
 
   # Employee routes
   resources :employees do

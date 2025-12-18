@@ -32,6 +32,7 @@
         left: 0;
         bottom: 0;
         box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        overflow-y: auto;
       }
 
       .sidebar-header {
@@ -381,7 +382,7 @@
             </a>
             <ul class="submenu <%= 'open' if request.path.include?('settings') %>" id="settingsSubmenu">
               <li><%= link_to change_profile_picture_path, class: request.path == change_profile_picture_path ? 'active' : '' do %><i class="fas fa-user-circle"></i> <span>Change Profile Picture</span><% end %></li>
-              <li><a href="#"><i class="fas fa-key"></i> <span>Change Password</span></a></li>
+              <li><%= link_to change_password_path, class: request.path == change_password_path ? 'active' : '' do %><i class="fas fa-key"></i> <span>Change Password</span><% end %></li>
             </ul>
           </li>
         </ul>
