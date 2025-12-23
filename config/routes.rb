@@ -2,6 +2,15 @@ Rails.application.routes.draw do
   get "dashboard/index"
   devise_for :users
 
+  # Password Reset routes
+  get "forgot_password", to: "password_reset#forgot_password", as: :forgot_password
+  post "send_code", to: "password_reset#send_code", as: :send_code
+  get "verify_code", to: "password_reset#verify_code", as: :verify_code
+  post "validate_code", to: "password_reset#validate_code", as: :validate_code
+  get "reset_password", to: "password_reset#reset_password", as: :reset_password
+  patch "update_password", to: "password_reset#update_password", as: :update_password
+  post "resend_code", to: "password_reset#resend_code", as: :resend_code
+
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
   get "profile", to: "profile#show", as: :profile

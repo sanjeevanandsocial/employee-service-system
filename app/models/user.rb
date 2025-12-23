@@ -51,4 +51,43 @@ class User < ApplicationRecord
       false
     end
   end
+
+  def generate_reset_token
+    self.reset_token = rand(1000..9999).to_s
+    self.reset_token_expires_at = nil
+    self.reset_token_sent_at = Time.current
+    self.reset_attempts = 0
+    save!
+  end
+
+  def reset_token_valid?
+    true
+  end
+
+  def increment_reset_attempts
+    self.reset_attempts += 1
+    save!
+  end
+
+  def can_attempt_reset?
+    reset_attempts < 3
+  end
+
+  def clear_reset_token
+    self.reset_token = nil
+    self.reset_token_expires_at = nil
+    self.reset_attempts = 0
+    self.reset_token_sent_at = nil
+    save!
+  end
+
+  def masked_email
+    email_parts = email.split('@')
+    username = email_parts[0]
+    domain = email_parts[1]
+    masked_username = username[0] + '*' * (username.length - 2) + username[-1] if username.length > 2
+    masked_username ||= username[0] + '*' if username.length == 2
+    masked_username ||= '*' if username.length == 1
+    "#{masked_username}@#{domain}"
+  end
 end

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Verify Code - Employee Service System</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  </head>
+
+  <body style="margin: 0;">
+    <div style="padding: 10px; background: #00226d; color: white; height: 40px; display: flex; align-items: center; font-size: 25px;">Enter Verification Code</div>
+    <div style="width: 500px; margin: 0 auto; margin-top: 50px;">
+      <div class="form-card">
+        <h1 class="form-title">Enter 4-Digit Code</h1>
+        <p style="text-align: center; color: #64748b;">We've sent a verification code to your email</p>
+        
+        <% if notice %>
+          <div class="success-message">
+            <%= notice %>
+          </div>
+        <% end %>
+
+        <% if alert %>
+          <div class="error-messages">
+            <%= alert %>
+          </div>
+        <% end %>
+
+        <%= form_with url: validate_code_path, method: :post, local: true do |form| %>
+          <div class="form-group">
+            <%= form.text_field :code, class: "form-input", placeholder: "Enter 4-digit code", maxlength: 4, pattern: "[0-9]{4}", required: true, style: "text-align: center; font-size: 24px; letter-spacing: 8px;" %>
+          </div>
+
+          <div class="btn-group">
+            <%= form.submit "Verify Code", class: "btn-primary" %>
+          </div>
+        <% end %>
+
+        <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 10px;">Didn't receive the code?</p>
+          <%= form_with url: resend_code_path, method: :post, local: true do |form| %>
+            <%= form.submit "Resend Code", class: "btn-secondary", id: "resend-btn" %>
+          <% end %>
+        </div>
+
+        <div style="text-align: center; margin-top: 15px;">
+          <%= link_to "Back to Login", new_user_session_path, style: "color: #667eea; text-decoration: none; font-size: 14px;" %>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Auto-format code input to only accept numbers
+      const codeInput = document.querySelector('input[name="code"]');
+      codeInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      });
+    </script>
+  </body>
+</html>
