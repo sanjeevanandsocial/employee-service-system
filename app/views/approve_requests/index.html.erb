@@ -13,6 +13,18 @@
   </div>
 </div>
 
+<% if notice %>
+  <div style="background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
+    <%= notice %>
+  </div>
+<% end %>
+
+<% if alert %>
+  <div style="background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca;">
+    <%= alert %>
+  </div>
+<% end %>
+
 <% if @requests.any? %>
   <table class="employees-table">
     <thead>
@@ -47,17 +59,17 @@
             <div style="display: inline-flex; gap: 4px;">
               <% if request.pending? %>
                 <% if @request_type == 'leave' %>
-                  <%= link_to update_leave_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff;" do %>
+                  <%= button_to update_leave_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff; border: none; cursor: pointer;" do %>
                     <i class="fas fa-check"></i> Approve
                   <% end %>
-                  <%= link_to update_leave_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff;" do %>
+                  <%= button_to update_leave_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff; border: none; cursor: pointer;" do %>
                     <i class="fas fa-times"></i> Reject
                   <% end %>
                 <% else %>
-                  <%= link_to update_od_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff;" do %>
+                  <%= button_to update_od_status_approve_request_path(request, status: 'approved'), method: :patch, class: "action-btn", style: "background: #10b981; color: #fff; border: none; cursor: pointer;" do %>
                     <i class="fas fa-check"></i> Approve
                   <% end %>
-                  <%= link_to update_od_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff;" do %>
+                  <%= button_to update_od_status_approve_request_path(request, status: 'rejected'), method: :patch, class: "action-btn", style: "background: #ef4444; color: #fff; border: none; cursor: pointer;" do %>
                     <i class="fas fa-times"></i> Reject
                   <% end %>
                 <% end %>

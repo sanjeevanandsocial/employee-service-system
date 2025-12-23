@@ -25,12 +25,14 @@ class OdRequest < ApplicationRecord
 
   def dates_before_today
     return if from_date.blank? || to_date.blank?
+    return unless new_record? # Only validate for new records
     errors.add(:from_date, "must be before today") if from_date >= Date.current
     errors.add(:to_date, "must be before today") if to_date >= Date.current
   end
 
   def no_overlapping_requests
     return if from_date.blank? || to_date.blank? || user.blank?
+    return unless new_record? # Only validate for new records
     
     # Check for any overlapping dates
     overlapping = user.od_requests.where.not(id: id).where.not(status: 'cancelled')
@@ -49,6 +51,7 @@ class OdRequest < ApplicationRecord
 
   def no_overlapping_leave_requests
     return if from_date.blank? || to_date.blank? || user.blank?
+    return unless new_record? # Only validate for new records
     
     overlapping = user.leave_requests.where.not(status: 'cancelled')
                      .where("(from_date <= ? AND to_date >= ?) OR (from_date <= ? AND to_date >= ?) OR (from_date >= ? AND to_date <= ?)",

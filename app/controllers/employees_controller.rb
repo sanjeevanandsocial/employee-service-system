@@ -42,7 +42,7 @@ class EmployeesController < ApplicationController
       redirect_to employees_path, notice: "Employee created successfully."
     else
       @employee.addresses.build(address_type: :current) if @employee.addresses.empty?
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
@@ -76,7 +76,7 @@ class EmployeesController < ApplicationController
   end
 
   def employee_params
-    params.require(:user).permit(:role, :age, :reporting_person_id, addresses_attributes: [:id, :line1, :line2, :city, :state, :zip, :country])
+    params.require(:user).permit(:email, :password, :password_confirmation, :role, :gender, :age, :reporting_person_id, addresses_attributes: [:id, :address_type, :line1, :line2, :city, :state, :zip, :country])
   end
 
   def generate_csv(employees)

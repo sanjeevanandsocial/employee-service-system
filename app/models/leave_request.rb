@@ -24,6 +24,7 @@ class LeaveRequest < ApplicationRecord
 
   def no_overlapping_requests
     return if from_date.blank? || to_date.blank? || user.blank?
+    return unless new_record? # Only validate for new records
     
     overlapping = user.leave_requests.where.not(id: id).where.not(status: 'cancelled')
                      .where("(from_date <= ? AND to_date >= ?) OR (from_date <= ? AND to_date >= ?) OR (from_date >= ? AND to_date <= ?)",
@@ -41,6 +42,7 @@ class LeaveRequest < ApplicationRecord
 
   def no_overlapping_od_requests
     return if from_date.blank? || to_date.blank? || user.blank?
+    return unless new_record? # Only validate for new records
     
     overlapping = user.od_requests.where.not(status: 'cancelled')
                      .where("(from_date <= ? AND to_date >= ?) OR (from_date <= ? AND to_date >= ?) OR (from_date >= ? AND to_date <= ?)",
