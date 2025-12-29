@@ -58,4 +58,4 @@ end
 
 gem "devise", "~> 4.9"
 gem "kaminari", "~> 1.2"
-gem "httparty", "~> 0.21"
+gem "httparty", "~> 0.24"
